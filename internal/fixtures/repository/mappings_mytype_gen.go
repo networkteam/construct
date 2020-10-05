@@ -50,5 +50,5 @@ func MyTargetTypeToChangeSet(r fixtures.MyType) (c MyTargetTypeChangeSet) {
 var myTargetTypeDefaultSelectJson = json.JsonBuildObject().
 	Set("ID", json.Exp("my_type.id")).
 	Set("Foo", json.Exp("my_type.foo")).
-	Set("Bar", json.Exp("my_type.the_bar")).
+	Set("Bar", json.Exp("ENCODE(my_type.the_bar,'BASE64')")).
 	Set("LastTime", json.Exp("my_type.last_time"))
