@@ -32,7 +32,7 @@ func (j JsonBuildObjectBuilder) GenerateSql(sb *strings.Builder) {
 	sb.WriteString(")")
 }
 
-// Exp generates SQL for a JSON_BUILD_OBJECT function
+// JsonBuildObject generates SQL for a JSON_BUILD_OBJECT function
 func JsonBuildObject() JsonBuildObjectBuilder {
 	return make(JsonBuildObjectBuilder)
 }

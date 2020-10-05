@@ -118,7 +118,7 @@ func generateDefaultSelectJsonObject(f *File, m *StructMapping) {
 			// Special handling for []byte (needs encoding to Base64 (used by encoding/json for unmarshal)
 			if v, ok := fm.FieldType.(*types.Slice); ok {
 				if v, ok := v.Elem().(*types.Basic); ok && v.Kind() == types.Byte {
-					setExpValue = Lit("ENCODE("+fm.ReadColDef.Col+","+"'BASE64')")
+					setExpValue = Lit("ENCODE(" + fm.ReadColDef.Col + "," + "'BASE64')")
 				}
 			}
 			code.Op(".").Line().Id("Set").Call(Lit(fm.Name), Qual("github.com/networkteam/construct/json", "Exp").Call(setExpValue))

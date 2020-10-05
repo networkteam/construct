@@ -23,7 +23,7 @@ func TestGenerate(t *testing.T) {
 		t.Errorf("expected output filename to be %s, but got %s", expectedOutputFilename, outputFilename)
 	}
 
-	fixtureOut, err := ioutil.ReadFile("./fixtures/repository/"+expectedOutputFilename)
+	fixtureOut, err := ioutil.ReadFile("./fixtures/repository/" + expectedOutputFilename)
 	if err != nil {
 		t.Fatalf("error reading fixture file: %v", err)
 	}
