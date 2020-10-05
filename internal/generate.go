@@ -114,7 +114,7 @@ func generateDefaultSelectJsonObject(f *File, m *StructMapping) {
 	code := f.Var().Id(varName).Op("=").Qual("github.com/networkteam/construct/json", "JsonBuildObject").Call()
 	for _, fm := range m.FieldMappings {
 		if fm.ReadColDef != nil {
-			code.Op(".").Line().Id("Set").Call(Lit(firstToLower(fm.Name)), Qual("github.com/networkteam/construct/json", "Exp").Call(Lit(fm.ReadColDef.Col)))
+			code.Op(".").Line().Id("Set").Call(Lit(fm.Name), Qual("github.com/networkteam/construct/json", "Exp").Call(Lit(fm.ReadColDef.Col)))
 		}
 	}
 }
@@ -183,7 +183,7 @@ func generateSortFields(f *File, m *StructMapping) {
 	sortFieldDict := make(Dict)
 	for _, fm := range m.FieldMappings {
 		if fm.ReadColDef != nil && fm.ReadColDef.Sortable {
-			sortFieldDict[Lit(firstToLower(fm.Name))] = Lit(fm.ReadColDef.Col)
+			sortFieldDict[Lit(strings.ToLower(fm.Name))] = Lit(fm.ReadColDef.Col)
 		}
 	}
 	f.Var().Id(firstToLower(m.TargetName + "SortFields")).Op("=").Map(String()).String().

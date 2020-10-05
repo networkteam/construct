@@ -16,24 +16,31 @@ func firstToLower(s string) string {
 	if s == "" {
 		return ""
 	}
+
 	var (
+		// current index
 		i int
-		secondIdx int
+		// index of rune before
+		j, k     int
+		hasLower bool
+		// current rune
 		r rune
 	)
-	// Check if all runes are uppercase
 	for i, r = range s {
-		if i > 0 && secondIdx == 0 {
-			secondIdx = i
-		}
+		k = j
+		j = i
 		if unicode.IsLower(r) {
+			hasLower = true
+			// Get the index before the last consecutive uppercase prefix rune (huh???)
+			if k > 0 {
+				j = k
+			}
 			break
 		}
 	}
-	// All runes are uppercase (e.g. "ID")
-	if i == len(s)-1 {
-		return strings.ToLower(s)
+	if !hasLower {
+		j = len(s)
 	}
-	// Only lowercase first rune
-	return strings.ToLower(s[0:secondIdx]) + s[secondIdx:]
+
+	return strings.ToLower(s[0:j]) + s[j:]
 }

@@ -13,14 +13,29 @@ func Test_firstToLower(t *testing.T) {
 		want string
 	}{
 		{
-			name: "consecutive caps",
+			name: "Empty string",
+			in:   "",
+			want: "",
+		},
+		{
+			name: "Just ID",
 			in:   "ID",
 			want: "id",
 		},
 		{
-			name: "single char",
+			name: "ID prefix",
+			in:   "IDHolder",
+			want: "idHolder",
+		},
+		{
+			name: "Single char",
 			in:   "V",
 			want: "v",
+		},
+		{
+			name: "Single unicode char",
+			in:   "Ä",
+			want: "ä",
 		},
 		{
 			name: "Upper camel",
@@ -41,6 +56,16 @@ func Test_firstToLower(t *testing.T) {
 			name: "Unicode prefix",
 			in:   "ÜberVar",
 			want: "überVar",
+		},
+		{
+			name: "ID anywhere",
+			in:   "CustomerID",
+			want: "customerID",
+		},
+		{
+			name: "JSON is here",
+			in:   "SomeJSON",
+			want: "someJSON",
 		},
 	}
 	for _, tt := range tests {

@@ -10,7 +10,7 @@ import (
 
 var myTargetTypeSortFields = map[string]string{
 	"foo":      "my_type.foo",
-	"lastTime": "my_type.last_time",
+	"lasttime": "my_type.last_time",
 }
 
 type MyTargetTypeChangeSet struct {
@@ -48,7 +48,7 @@ func MyTargetTypeToChangeSet(r fixtures.MyType) (c MyTargetTypeChangeSet) {
 }
 
 var myTargetTypeDefaultSelectJson = json.JsonBuildObject().
-	Set("id", json.Exp("my_type.id")).
-	Set("foo", json.Exp("my_type.foo")).
-	Set("bar", json.Exp("my_type.the_bar")).
-	Set("lastTime", json.Exp("my_type.last_time"))
+	Set("ID", json.Exp("my_type.id")).
+	Set("Foo", json.Exp("my_type.foo")).
+	Set("Bar", json.Exp("my_type.the_bar")).
+	Set("LastTime", json.Exp("my_type.last_time"))
