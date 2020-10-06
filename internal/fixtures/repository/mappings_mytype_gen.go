@@ -2,15 +2,25 @@
 package repository
 
 import (
+	"database/sql"
+	json1 "encoding/json"
 	uuid "github.com/gofrs/uuid"
+	construct "github.com/networkteam/construct"
 	fixtures "github.com/networkteam/construct/internal/fixtures"
 	json "github.com/networkteam/construct/json"
 	"time"
 )
 
+const (
+	myType_id       = "my_type.id"
+	myType_foo      = "my_type.foo"
+	myType_bar      = "my_type.the_bar"
+	myType_lastTime = "my_type.last_time"
+)
+
 var myTargetTypeSortFields = map[string]string{
-	"foo":      "my_type.foo",
-	"lasttime": "my_type.last_time",
+	"foo":      myType_foo,
+	"lasttime": myType_lastTime,
 }
 
 type MyTargetTypeChangeSet struct {
@@ -52,3 +62,14 @@ var myTargetTypeDefaultSelectJson = json.JsonBuildObject().
 	Set("Foo", json.Exp("my_type.foo")).
 	Set("Bar", json.Exp("ENCODE(my_type.the_bar,'BASE64')")).
 	Set("LastTime", json.Exp("my_type.last_time"))
+
+func myTargetTypeScanJsonRow(row construct.RowScanner) (result fixtures.MyType, err error) {
+	var data []byte
+	if err := row.Scan(&data); err != nil {
+		if err == sql.ErrNoRows {
+			return result, construct.ErrNotFound
+		}
+		return result, err
+	}
+	return result, json1.Unmarshal(data, &result)
+}
