@@ -13,6 +13,7 @@ var _ SqlGenerator = JsonBuildObjectBuilder{}
 func JsonBuildObject() JsonBuildObjectBuilder {
 	return JsonBuildObjectBuilder{m: make(map[string]SqlGenerator)}
 }
+
 // GenerateSql implements SqlGenerator
 func (b JsonBuildObjectBuilder) GenerateSql(sb *strings.Builder) {
 	sb.WriteString("JSON_BUILD_OBJECT(")
