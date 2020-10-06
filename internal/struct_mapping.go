@@ -10,28 +10,42 @@ import (
 
 type StructMapping struct {
 	// TargetName is the exported record name (e.g. "MyRecord")
-	TargetName         string
+	TargetName string
+	// MappingTypePackage is the package of the type with mapping information
 	MappingTypePackage string
-	MappingTypeName    string
-	FieldMappings      []FieldMapping
+	// MappingTypePackage is the name of the type with mapping information
+	MappingTypeName string
+	// FieldMappings contains all field mappings derived from the type
+	FieldMappings []FieldMapping
 }
 
+// FieldMapping contains mapping information for a field of a mapping
 type FieldMapping struct {
-	Name        string
-	ReadColDef  *ReadColDef
+	// Name is the Go field name
+	Name string
+	// ReadColDef is the read column definition (nil if not given)
+	ReadColDef *ReadColDef
+	// WriteColDef is the write column definition (nil if not given)
 	WriteColDef *WriteColDef
-	FieldType   types.Type
+	// FieldType is the type in the Go struct
+	FieldType types.Type
 }
 
+// ReadColDef is the read column definition
 type ReadColDef struct {
-	Col      string
+	// Col is the column name
+	Col string
+	// Sortable is true, if the column should appear in the list of sortable columns
 	Sortable bool
 }
 
+// WriteColDef is the write column definition
 type WriteColDef struct {
+	// Col is the column name
 	Col string
 }
 
+// BuildStructMapping builds a struct mapping for a given mapping type and target type
 func BuildStructMapping(mappingTypePackage string, mappingTypeName string, targetTypeName string) (*StructMapping, error) {
 	cfg := &packages.Config{Mode: packages.NeedTypes | packages.NeedSyntax | packages.NeedImports}
 	pkgs, err := packages.Load(cfg, mappingTypePackage)

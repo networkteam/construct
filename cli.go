@@ -11,6 +11,14 @@ import (
 	"github.com/networkteam/construct/internal"
 )
 
+// NewCliApp returns a new app that can be executed in a main function.
+//
+// Example:
+//   app := construct.NewCliApp()
+//   err := app.Run(os.Args)
+//   if err != nil {
+//     _, _ = fmt.Fprintf(os.Stderr, "Error: %v", err)
+//   }
 func NewCliApp() *cli.App {
 	return &cli.App{
 		Name:      "construct",
