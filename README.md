@@ -1,6 +1,6 @@
 # construct : Go generators for low abstraction persistence with PostgreSQL
 
-## Overview [![GoDoc](https://godoc.org/github.com/networkteam/construct?status.svg)](https://godoc.org/github.com/networkteam/construct) [![Build Status](https://travis-ci.org/networkteam/construct.svg?branch=master)](https://travis-ci.org/networkteam/construct) [![Go Report Card](https://goreportcard.com/badge/github.com/networkteam/construct)](https://goreportcard.com/report/github.com/networkteam/construct)
+## Overview [![GoDoc](https://godoc.org/github.com/networkteam/construct?status.svg)](https://godoc.org/github.com/networkteam/construct) [![Build Status](https://travis-ci.com/networkteam/construct.svg?branch=main)](https://travis-ci.com/github/networkteam/construct) [![Go Report Card](https://goreportcard.com/badge/github.com/networkteam/construct)](https://goreportcard.com/report/github.com/networkteam/construct)
 
 Got tired of too many abstractions over all the features PostgreSQL provides when using an ORM? But rolling your own persistence code is tedious and there's too much boilderplate?
 This is a code generator to generate a bunch of structs and functions to implement persistence code with a few line and keep all the power PostgreSQL provides.
