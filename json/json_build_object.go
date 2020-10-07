@@ -1,6 +1,9 @@
 package json
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 // JsonBuildObjectBuilder is a builder for a JSON_BUILD_OBJECT function
 type JsonBuildObjectBuilder struct {
@@ -23,6 +26,7 @@ func (b JsonBuildObjectBuilder) GenerateSql(sb *strings.Builder) {
 	for key := range b.m {
 		keys = append(keys, key)
 	}
+	sort.Strings(keys)
 
 	for _, key := range keys {
 		v := b.m[key]
