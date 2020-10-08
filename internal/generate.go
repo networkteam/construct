@@ -97,7 +97,7 @@ func Generate(m *StructMapping, goPackage string, goFile string, w io.Writer) (o
 		Id("r").Qual(m.MappingTypePackage, m.MappingTypeName),
 	).Params(Id("c").Id(changeSetName)).Block(
 		toChangeSetBlock...,
-	)
+	).Line()
 
 	generateDefaultSelectJsonObject(f, m)
 
@@ -125,9 +125,9 @@ func readColConstId(m *StructMapping, fm FieldMapping) string {
 }
 
 func generateDefaultSelectJsonObject(f *File, m *StructMapping) {
-	varName := firstToLower(m.TargetName + "DefaultSelectJson")
+	funcName := firstToLower(m.TargetName + "DefaultSelectJson")
 
-	code := f.Var().Id(varName).Op("=").Qual("github.com/networkteam/construct/json", "JsonBuildObject").Call()
+	code := Qual("github.com/networkteam/construct/json", "JsonBuildObject").Call()
 	for _, fm := range m.FieldMappings {
 		if fm.ReadColDef != nil {
 			setExpValue := Lit(fm.ReadColDef.Col)
@@ -140,6 +140,8 @@ func generateDefaultSelectJsonObject(f *File, m *StructMapping) {
 			code.Op(".").Line().Id("Set").Call(Lit(fm.Name), Qual("github.com/networkteam/construct/json", "Exp").Call(setExpValue))
 		}
 	}
+
+	f.Func().Id(funcName).Params().Qual("github.com/networkteam/construct/json", "JsonBuildObjectBuilder").Block(Return(code)).Line()
 }
 
 func generateScanJsonRow(f *File, m *StructMapping) {
