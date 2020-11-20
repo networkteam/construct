@@ -3,11 +3,11 @@ package repository
 
 import (
 	"database/sql"
-	json1 "encoding/json"
+	"encoding/json"
 	uuid "github.com/gofrs/uuid"
 	construct "github.com/networkteam/construct"
 	fixtures "github.com/networkteam/construct/internal/fixtures"
-	json "github.com/networkteam/construct/json"
+	cjson "github.com/networkteam/construct/json"
 	"time"
 )
 
@@ -15,6 +15,7 @@ const (
 	myType_id       = "my_type.id"
 	myType_foo      = "my_type.foo"
 	myType_bar      = "my_type.the_bar"
+	myType_baz      = "my_type.baz"
 	myType_lastTime = "my_type.last_time"
 )
 
@@ -27,6 +28,7 @@ type MyTargetTypeChangeSet struct {
 	ID       *uuid.UUID
 	Foo      *string
 	Bar      []byte
+	Baz      *fixtures.MyEmbeddedType
 	LastTime **time.Time
 }
 
@@ -41,6 +43,10 @@ func (c MyTargetTypeChangeSet) toMap() map[string]interface{} {
 	if c.Bar != nil {
 		m["the_bar"] = c.Bar
 	}
+	if c.Baz != nil {
+		data, _ := json.Marshal(c.Baz)
+		m["baz"] = data
+	}
 	if c.LastTime != nil {
 		m["last_time"] = *c.LastTime
 	}
@@ -53,16 +59,18 @@ func MyTargetTypeToChangeSet(r fixtures.MyType) (c MyTargetTypeChangeSet) {
 	}
 	c.Foo = &r.Foo
 	c.Bar = r.Bar
+	c.Baz = &r.Baz
 	c.LastTime = &r.LastTime
 	return
 }
 
-func myTargetTypeDefaultSelectJson() json.JsonBuildObjectBuilder {
-	return json.JsonBuildObject().
-		Set("ID", json.Exp("my_type.id")).
-		Set("Foo", json.Exp("my_type.foo")).
-		Set("Bar", json.Exp("ENCODE(my_type.the_bar,'BASE64')")).
-		Set("LastTime", json.Exp("my_type.last_time"))
+func myTargetTypeDefaultSelectJson() cjson.JsonBuildObjectBuilder {
+	return cjson.JsonBuildObject().
+		Set("ID", cjson.Exp("my_type.id")).
+		Set("Foo", cjson.Exp("my_type.foo")).
+		Set("Bar", cjson.Exp("ENCODE(my_type.the_bar,'BASE64')")).
+		Set("Baz", cjson.Exp("my_type.baz")).
+		Set("LastTime", cjson.Exp("my_type.last_time"))
 }
 
 func myTargetTypeScanJsonRow(row construct.RowScanner) (result fixtures.MyType, err error) {
@@ -73,5 +81,5 @@ func myTargetTypeScanJsonRow(row construct.RowScanner) (result fixtures.MyType, 
 		}
 		return result, err
 	}
-	return result, json1.Unmarshal(data, &result)
+	return result, json.Unmarshal(data, &result)
 }

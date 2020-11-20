@@ -13,15 +13,26 @@ This is a code generator to generate a bunch of structs and functions to impleme
 ```go
 package model
 
+// Customer is just a struct, only struct tags are used in construct to generate code (no struct embedding needed) 
 type Customer struct {
 	ID            uuid.UUID `read_col:"customers.customer_id" write_col:"customer_id"`
 	Name          string    `read_col:"customers.name,sortable" write_col:"name"`
-	ContactPerson string    `read_col:"customers.contact_person,sortable" write_col:"contact_person"`
-	// DomainCount is for reading an aggregated domain count
+    // Fields can be serialized as JSON by adding a "json" option to the "write_col" tag.
+    // It works perfectly with a column of type jsonb or json in PostgreSQL.
+	ContactPerson Contact   `read_col:"customers.contact_person,sortable" write_col:"contact_person,json"`
+
+	// DomainCount is not mapped to the table but used in the select for reading an aggregate count
 	DomainCount int
 
 	CreatedAt time.Time `read_col:"customers.created_at,sortable" write_col:"created_at"`
 	UpdatedAt time.Time `read_col:"customers.updated_at,sortable"`
+}
+
+// Contact is an embedded type and doesn't need any tags
+type Contact struct {
+	FirstName  string
+	MiddleName string
+	LastName   string
 }
 ```
 

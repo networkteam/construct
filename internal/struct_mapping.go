@@ -42,7 +42,9 @@ type ReadColDef struct {
 // WriteColDef is the write column definition
 type WriteColDef struct {
 	// Col is the column name
-	Col string
+	Col    string
+	// ToJSON when writing a column value
+	ToJSON bool
 }
 
 // BuildStructMapping builds a struct mapping for a given mapping type and target type
@@ -102,6 +104,7 @@ func BuildStructMapping(mappingTypePackage string, mappingTypeName string, targe
 			if tag.Key == "write_col" {
 				fm.WriteColDef = &WriteColDef{
 					Col: tag.Name,
+					ToJSON: tag.HasOption("json"),
 				}
 			}
 		}

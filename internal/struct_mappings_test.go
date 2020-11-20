@@ -48,6 +48,18 @@ func myTypeStructMapping() *internal.StructMapping {
 				FieldType: types.NewSlice(types.Universe.Lookup("byte").Type()),
 			},
 			{
+				Name: "Baz",
+				ReadColDef: &internal.ReadColDef{
+					Col:      "my_type.baz",
+					Sortable: false,
+				},
+				WriteColDef: &internal.WriteColDef{
+					Col:    "baz",
+					ToJSON: true,
+				},
+				FieldType: types.NewNamed(types.NewTypeName(token.NoPos, types.NewPackage("github.com/networkteam/construct/internal/fixtures", "MyEmbeddedType"), "MyEmbeddedType", nil), nil, nil),
+			},
+			{
 				Name: "LastTime",
 				ReadColDef: &internal.ReadColDef{
 					Col:      "my_type.last_time",
@@ -88,13 +100,14 @@ func TestBuildStructMapping(t *testing.T) {
 		if actualFieldMapping.Name != expectedFieldMapping.Name {
 			t.Errorf("expected field mapping %d name to be %s, but got %s", i, expectedFieldMapping.Name, actualFieldMapping.Name)
 		}
+
 		if expectedFieldMapping.ReadColDef == nil {
 			if actualFieldMapping.ReadColDef != nil {
 				t.Errorf("expected field mapping %d read col def to be nil, but it was not", i)
 			}
 		} else {
 			if actualFieldMapping.ReadColDef == nil {
-				t.Errorf("expected field mapping %d read col def to be not nil, but it was", i)
+				t.Fatalf("expected field mapping %d read col def to be not nil, but it was", i)
 			}
 			if actualFieldMapping.ReadColDef.Col != expectedFieldMapping.ReadColDef.Col {
 				t.Errorf("expected field mapping %d read col def col to be %s, but got %s", i, expectedFieldMapping.ReadColDef.Col, actualFieldMapping.ReadColDef.Col)
@@ -103,21 +116,27 @@ func TestBuildStructMapping(t *testing.T) {
 				t.Errorf("expected field mapping %d read col def sortable to be %v, but got %v", i, expectedFieldMapping.ReadColDef.Sortable, actualFieldMapping.ReadColDef.Sortable)
 			}
 		}
+
 		if expectedFieldMapping.WriteColDef == nil {
 			if actualFieldMapping.WriteColDef != nil {
 				t.Errorf("expected field mapping %d write col def to be nil, but it was not", i)
 			}
 		} else {
 			if actualFieldMapping.WriteColDef == nil {
-				t.Errorf("expected field mapping %d write col def to be not nil, but it was", i)
+				t.Fatalf("expected field mapping %d write col def to be not nil, but it was", i)
 			}
 			if actualFieldMapping.WriteColDef.Col != expectedFieldMapping.WriteColDef.Col {
 				t.Errorf("expected field mapping %d write col def col to be %s, but got %s", i, expectedFieldMapping.WriteColDef.Col, actualFieldMapping.WriteColDef.Col)
 			}
+			if actualFieldMapping.WriteColDef.ToJSON != expectedFieldMapping.WriteColDef.ToJSON {
+				t.Errorf("expected field mapping %d write col def json to be %v, but got %v", i, expectedFieldMapping.WriteColDef.ToJSON, actualFieldMapping.WriteColDef.ToJSON)
+			}
 		}
+
 		if actualFieldMapping.Name != expectedFieldMapping.Name {
 			t.Errorf("expected field mapping %d name to be %s, but got %s", i, expectedFieldMapping.Name, actualFieldMapping.Name)
 		}
+
 		if actualFieldMapping.FieldType.String() != expectedFieldMapping.FieldType.String() {
 			t.Errorf("expected field mapping %d field type to be %s, but got %s", i, expectedFieldMapping.FieldType.String(), actualFieldMapping.FieldType.String())
 		}
