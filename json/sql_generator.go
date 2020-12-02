@@ -6,3 +6,9 @@ import "strings"
 type SqlGenerator interface {
 	GenerateSql(sb *strings.Builder)
 }
+
+func GeneratorToSql(g SqlGenerator) string {
+	sb := new(strings.Builder)
+	g.GenerateSql(sb)
+	return sb.String()
+}

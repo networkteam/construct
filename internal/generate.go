@@ -134,7 +134,7 @@ func readColConstId(m *StructMapping, fm FieldMapping) string {
 }
 
 func generateDefaultSelectJsonObject(f *File, m *StructMapping) {
-	funcName := firstToLower(m.TargetName + "DefaultSelectJson")
+	varName := firstToLower(m.TargetName + "DefaultSelectJson")
 
 	code := Qual("github.com/networkteam/construct/json", "JsonBuildObject").Call()
 	for _, fm := range m.FieldMappings {
@@ -150,7 +150,7 @@ func generateDefaultSelectJsonObject(f *File, m *StructMapping) {
 		}
 	}
 
-	f.Func().Id(funcName).Params().Qual("github.com/networkteam/construct/json", "JsonBuildObjectBuilder").Block(Return(code)).Line()
+	f.Var().Id(varName).Op("=").Add(code).Line()
 }
 
 func generateScanJsonRow(f *File, m *StructMapping) {

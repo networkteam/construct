@@ -64,14 +64,12 @@ func MyTargetTypeToChangeSet(r fixtures.MyType) (c MyTargetTypeChangeSet) {
 	return
 }
 
-func myTargetTypeDefaultSelectJson() cjson.JsonBuildObjectBuilder {
-	return cjson.JsonBuildObject().
-		Set("ID", cjson.Exp("my_type.id")).
-		Set("Foo", cjson.Exp("my_type.foo")).
-		Set("Bar", cjson.Exp("ENCODE(my_type.the_bar,'BASE64')")).
-		Set("Baz", cjson.Exp("my_type.baz")).
-		Set("LastTime", cjson.Exp("my_type.last_time"))
-}
+var myTargetTypeDefaultSelectJson = cjson.JsonBuildObject().
+	Set("ID", cjson.Exp("my_type.id")).
+	Set("Foo", cjson.Exp("my_type.foo")).
+	Set("Bar", cjson.Exp("ENCODE(my_type.the_bar,'BASE64')")).
+	Set("Baz", cjson.Exp("my_type.baz")).
+	Set("LastTime", cjson.Exp("my_type.last_time"))
 
 func myTargetTypeScanJsonRow(row construct.RowScanner) (result fixtures.MyType, err error) {
 	var data []byte

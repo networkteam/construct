@@ -13,6 +13,10 @@ github.com/gofrs/uuid v3.3.0+incompatible h1:8K4tyRfvU1CYPgJsveYFQMhpFd/wXNM7iK6
 github.com/gofrs/uuid v3.3.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/rsms/go-bits v0.1.0 h1:n5/Myc4xhIwT78VOJuifeHLrR48jwiN/VecpZ8GwPnQ=
+github.com/rsms/go-bits v0.1.0/go.mod h1:j/h0WsRdMcGHjsZx9ZOr9U/amdJ7R+Ha6eRxSNV4bnY=
+github.com/rsms/go-immutable v0.1.3 h1:FCSEqFtTPGekzXYWO+X8xN0wdVgOcLLWxF4uWow3F2k=
+github.com/rsms/go-immutable v0.1.3/go.mod h1:7UFZVgmt+lfLVCdzhZfocO+uoGjNdOqO84zNZJF6Gc4=
 github.com/russross/blackfriday/v2 v2.0.1 h1:lPqVAte+HuHNfhJ/0LC98ESWRz8afy9tM/0RK8m9o+Q=
 github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/shurcooL/sanitized_anchor_name v1.0.0 h1:PdmoCO6wvbs+7yrJyMORt4/BmY5IYyJwS/kOiWx8mHo=
