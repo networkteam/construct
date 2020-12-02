@@ -2,7 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/networkteam/construct?status.svg)](https://godoc.org/github.com/networkteam/construct)
 [![Build Status](https://github.com/networkteam/construct/workflows/run%20tests/badge.svg)](https://github.com/networkteam/construct/actions?workflow=run%20tests)
-[![Coverage Status](https://coveralls.io/repos/github/networkteam/construct/badge.svg?branch=master)](https://coveralls.io/github/networkteam/construct?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/networkteam/construct/badge.svg?branch=main)](https://coveralls.io/github/networkteam/construct?branch=main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/networkteam/construct)](https://goreportcard.com/report/github.com/networkteam/construct)
 
 ## Overview
