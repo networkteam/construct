@@ -11,6 +11,7 @@ import (
 	"github.com/friendsofgo/errors"
 )
 
+// Generate Go code for the struct mapping
 func Generate(m *StructMapping, goPackage string, goFile string, w io.Writer) (outputFilename string, err error) {
 	f := NewFile(goPackage)
 

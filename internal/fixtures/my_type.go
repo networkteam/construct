@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+// MyType is a fixture struct type
 type MyType struct {
 	// ID is readable and writable
 	ID uuid.UUID `read_col:"my_type.id" write_col:"id"`
@@ -19,6 +20,7 @@ type MyType struct {
 	LastTime *time.Time `read_col:"my_type.last_time,sortable" write_col:"last_time"`
 }
 
+// MyEmbeddedType will be embedded in MyType
 type MyEmbeddedType struct {
 	Fizz bool
 	Buzz bool

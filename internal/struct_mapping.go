@@ -8,6 +8,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+// StructMapping contains mapping information for a struct type
 type StructMapping struct {
 	// TargetName is the exported record name (e.g. "MyRecord")
 	TargetName string
