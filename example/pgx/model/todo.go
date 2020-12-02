@@ -6,6 +6,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
+// Todo model belonging to a project
 type Todo struct {
 	ID          uuid.UUID  `read_col:"todos.id" write_col:"id"`
 	ProjectID   uuid.UUID  `read_col:"todos.project_id" write_col:"project_id"`
@@ -16,6 +17,7 @@ type Todo struct {
 	Project *Project
 }
 
+// TodosFilter for filtering todos
 type TodosFilter struct {
 	ProjectID *uuid.UUID
 }

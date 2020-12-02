@@ -7,6 +7,7 @@ type SqlGenerator interface {
 	GenerateSql(sb *strings.Builder)
 }
 
+// GeneratorToSql generates SQL from a generator
 func GeneratorToSql(g SqlGenerator) string {
 	sb := new(strings.Builder)
 	g.GenerateSql(sb)
