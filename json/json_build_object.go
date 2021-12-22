@@ -1,10 +1,9 @@
 package json
 
 import (
+	"github.com/networkteam/go-immutable"
 	"sort"
 	"strings"
-
-	"github.com/rsms/go-immutable"
 )
 
 // JsonBuildObjectBuilder is a builder for a JSON_BUILD_OBJECT function. It is immutable and safe for concurrent use.
