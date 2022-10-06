@@ -74,6 +74,49 @@ func BuildStructMapping(mappingTypePackage string, mappingTypeName string, targe
 		return nil, errors.Errorf("type %v is a %T, not a struct", obj, obj.Type().Underlying())
 	}
 
+	return buildStructMapping(targetTypeName, mappingTypePackage, mappingTypeName, structType)
+}
+
+// DiscoverStructMappings discovers all struct mappings in a given package
+func DiscoverStructMappings(mappingTypePackage string) (mappings []*StructMapping, err error) {
+	cfg := &packages.Config{Mode: packages.NeedTypes | packages.NeedSyntax | packages.NeedImports}
+	pkgs, err := packages.Load(cfg, mappingTypePackage)
+	if err != nil {
+		return nil, errors.Wrap(err, "loading package for type info")
+	}
+
+	if len(pkgs) != 1 {
+		return nil, errors.Errorf("expected single package after load, got %d", len(pkgs))
+	}
+	pkg := pkgs[0]
+
+	names := pkg.Types.Scope().Names()
+
+	for _, name := range names {
+		obj := pkg.Types.Scope().Lookup(name)
+		if _, ok := obj.(*types.TypeName); !ok {
+			continue
+		}
+		structType, ok := obj.Type().Underlying().(*types.Struct)
+		if !ok {
+			continue
+		}
+
+		m, err := buildStructMapping(name, mappingTypePackage, name, structType)
+		if err != nil {
+			return nil, errors.Wrapf(err, "building struct mapping for %s", name)
+		}
+
+		// Only include mappings with read or write columns defined
+		if m.hasColDef() {
+			mappings = append(mappings, m)
+		}
+	}
+
+	return mappings, nil
+}
+
+func buildStructMapping(targetTypeName, mappingTypePackage, mappingTypeName string, structType *types.Struct) (*StructMapping, error) {
 	var m StructMapping
 
 	m.TargetName = targetTypeName
@@ -114,4 +157,13 @@ func BuildStructMapping(mappingTypePackage string, mappingTypeName string, targe
 	}
 
 	return &m, nil
+}
+
+func (m *StructMapping) hasColDef() bool {
+	for _, fm := range m.FieldMappings {
+		if fm.ReadColDef != nil || fm.WriteColDef != nil {
+			return true
+		}
+	}
+	return false
 }
