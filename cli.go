@@ -25,7 +25,7 @@ func NewCliApp() *cli.App {
 	return &cli.App{
 		Name:      "construct",
 		Usage:     "Generate struct mappings and helper functions for SQL",
-		ArgsUsage: "[struct type] ([target type name])",
+		ArgsUsage: "[struct type | pkg] ([target type name])",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "go-package",
@@ -101,16 +101,13 @@ func getPackageAndTypeName(mappingType string) (string, string, error) {
 	}
 	lastPackageAndTypeName := mappingType[i+1:]
 
-	mappingTypeName := ""
-	mappingTypePackage := mappingType
-
 	// Check if last package part has a ".", if so, a type name is specified
 	j := strings.LastIndexByte(lastPackageAndTypeName, '.')
 	if j != -1 {
 		// Split mappingType by last "." to get the package and the type name
 		k := strings.LastIndexByte(mappingType, '.')
-		mappingTypePackage = mappingType[:k]
-		mappingTypeName = mappingType[k+1:]
+		mappingTypePackage := mappingType[:k]
+		mappingTypeName := mappingType[k+1:]
 
 		return mappingTypeName, mappingTypePackage, nil
 	}
