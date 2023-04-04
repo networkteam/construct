@@ -2,12 +2,12 @@ package internal_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/networkteam/construct/internal"
+	"github.com/networkteam/construct/v2/internal"
 )
 
 func TestGenerate(t *testing.T) {
@@ -23,7 +23,7 @@ func TestGenerate(t *testing.T) {
 		t.Errorf("expected output filename to be %s, but got %s", expectedOutputFilename, outputFilename)
 	}
 
-	fixtureOut, err := ioutil.ReadFile("./fixtures/repository/" + expectedOutputFilename)
+	fixtureOut, err := os.ReadFile("./fixtures/repository/" + expectedOutputFilename)
 	if err != nil {
 		t.Fatalf("error reading fixture file: %v", err)
 	}

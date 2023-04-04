@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/networkteam/construct/json"
+	"github.com/networkteam/construct/v2/json"
 )
 
 func TestJsonBuildArray_Empty(t *testing.T) {

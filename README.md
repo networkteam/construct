@@ -49,7 +49,7 @@ Generate code in your persistence package:
 ```go
 package repository
 
-//go:generate go run github.com/networkteam/construct/cmd/construct my/project/model.Customer
+//go:generate go run github.com/networkteam/construct/v2/cmd/construct my/project/model.Customer
 ```
 
 ```bash
@@ -141,7 +141,7 @@ func assertRowsAffected(res sql.Result, op string, nunberOfRows int64) error {
 ## Install
 
 ```
-go get github.com/networkteam/construct
+go get github.com/networkteam/construct/v2
 ```
 
 ## License

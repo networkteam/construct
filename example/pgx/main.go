@@ -12,8 +12,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli/v2"
 
-	"github.com/networkteam/construct/example/pgx/model"
-	"github.com/networkteam/construct/example/pgx/repository"
+	"github.com/networkteam/construct/v2/example/pgx/model"
+	"github.com/networkteam/construct/v2/example/pgx/repository"
 )
 
 func main() {

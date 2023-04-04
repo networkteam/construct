@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/jackc/pgx/v4"
 
-	"github.com/networkteam/construct"
+	"github.com/networkteam/construct/v2"
 )
 
 func queryBuilder() squirrel.StatementBuilderType {

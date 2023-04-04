@@ -7,8 +7,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgtype/pgxtype"
 
-	"github.com/networkteam/construct/example/pgx/model"
-	cjson "github.com/networkteam/construct/json"
+	"github.com/networkteam/construct/v2/example/pgx/model"
+	cjson "github.com/networkteam/construct/v2/json"
 )
 
 // projectBuildFindQuery creates a partial squirrel.SelectBuilder that

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/networkteam/construct"
+	"github.com/networkteam/construct/v2"
 )
 
 func main() {

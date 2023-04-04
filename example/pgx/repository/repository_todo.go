@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgtype/pgxtype"
 
-	"github.com/networkteam/construct/example/pgx/model"
+	"github.com/networkteam/construct/v2/example/pgx/model"
 )
 
 // todoBuildFindQuery creates a partial squirrel.SelectBuilder that

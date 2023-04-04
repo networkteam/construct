@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	uuid "github.com/gofrs/uuid"
-	construct "github.com/networkteam/construct"
-	model "github.com/networkteam/construct/example/pgx/model"
-	cjson "github.com/networkteam/construct/json"
+	construct "github.com/networkteam/construct/v2"
+	model "github.com/networkteam/construct/v2/example/pgx/model"
+	cjson "github.com/networkteam/construct/v2/json"
 )
 
 const (

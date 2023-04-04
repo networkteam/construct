@@ -1,6 +1,6 @@
-module github.com/networkteam/construct
+module github.com/networkteam/construct/v2
 
-go 1.18
+go 1.20
 
 require (
 	github.com/dave/jennifer v1.5.1

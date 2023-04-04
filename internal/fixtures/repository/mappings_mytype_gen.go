@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	uuid "github.com/gofrs/uuid"
-	construct "github.com/networkteam/construct"
-	fixtures "github.com/networkteam/construct/internal/fixtures"
-	cjson "github.com/networkteam/construct/json"
+	construct "github.com/networkteam/construct/v2"
+	fixtures "github.com/networkteam/construct/v2/internal/fixtures"
+	cjson "github.com/networkteam/construct/v2/json"
 	"time"
 )
 

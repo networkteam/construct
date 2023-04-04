@@ -5,13 +5,13 @@ import (
 	"go/types"
 	"testing"
 
-	"github.com/networkteam/construct/internal"
+	"github.com/networkteam/construct/v2/internal"
 )
 
 func myTypeStructMapping() *internal.StructMapping {
 	return &internal.StructMapping{
 		TargetName:         "MyTargetType",
-		MappingTypePackage: "github.com/networkteam/construct/internal/fixtures",
+		MappingTypePackage: "github.com/networkteam/construct/v2/internal/fixtures",
 		MappingTypeName:    "MyType",
 		FieldMappings: []internal.FieldMapping{
 			{
@@ -57,7 +57,7 @@ func myTypeStructMapping() *internal.StructMapping {
 					Col:    "baz",
 					ToJSON: true,
 				},
-				FieldType: types.NewNamed(types.NewTypeName(token.NoPos, types.NewPackage("github.com/networkteam/construct/internal/fixtures", "MyEmbeddedType"), "MyEmbeddedType", nil), nil, nil),
+				FieldType: types.NewNamed(types.NewTypeName(token.NoPos, types.NewPackage("github.com/networkteam/construct/v2/internal/fixtures", "MyEmbeddedType"), "MyEmbeddedType", nil), nil, nil),
 			},
 			{
 				Name: "LastTime",
@@ -75,7 +75,7 @@ func myTypeStructMapping() *internal.StructMapping {
 }
 
 func TestBuildStructMapping(t *testing.T) {
-	m, err := internal.BuildStructMapping("github.com/networkteam/construct/internal/fixtures", "MyType", "MyTargetType")
+	m, err := internal.BuildStructMapping("github.com/networkteam/construct/v2/internal/fixtures", "MyType", "MyTargetType")
 	if err != nil {
 		t.Fatalf("error building struct mapping: %v", err)
 	}
