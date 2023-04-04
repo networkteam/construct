@@ -2,20 +2,18 @@
 package repository
 
 import (
-	"database/sql"
-	"encoding/json"
 	uuid "github.com/gofrs/uuid"
-	construct "github.com/networkteam/construct/v2"
 	model "github.com/networkteam/construct/v2/example/pgx/model"
-	cjson "github.com/networkteam/construct/v2/json"
+	qrb "github.com/networkteam/qrb"
+	builder "github.com/networkteam/qrb/builder"
+	fn "github.com/networkteam/qrb/fn"
 )
 
-const (
-	project_id    = "projects.id"
-	project_title = "projects.title"
+var (
+	project_id    = qrb.N("projects.id")
+	project_title = qrb.N("projects.title")
 )
-
-var projectSortFields = map[string]string{}
+var projectSortFields = map[string]builder.IdentExp{}
 
 type ProjectChangeSet struct {
 	ID    *uuid.UUID
@@ -41,17 +39,6 @@ func ProjectToChangeSet(r model.Project) (c ProjectChangeSet) {
 	return
 }
 
-var projectDefaultSelectJson = cjson.JsonBuildObject().
-	Set("ID", cjson.Exp("projects.id")).
-	Set("Title", cjson.Exp("projects.title"))
-
-func projectScanJsonRow(row construct.RowScanner) (result model.Project, err error) {
-	var data []byte
-	if err := row.Scan(&data); err != nil {
-		if err == sql.ErrNoRows {
-			return result, construct.ErrNotFound
-		}
-		return result, err
-	}
-	return result, json.Unmarshal(data, &result)
-}
+var projectDefaultJson = fn.JsonBuildObject().
+	Prop("ID", project_id).
+	Prop("Title", project_title)

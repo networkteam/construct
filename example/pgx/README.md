@@ -1,4 +1,4 @@
-# Construct example with Squirrel and pgx
+# Construct example with qrb and pgx
 
 A very simple todo CLI application that shows how custom repository code can use the generated mappings
 from construct. It features eager loading of nested relations and usage of the pgx features instead of

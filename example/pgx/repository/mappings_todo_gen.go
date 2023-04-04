@@ -2,23 +2,21 @@
 package repository
 
 import (
-	"database/sql"
-	"encoding/json"
 	uuid "github.com/gofrs/uuid"
-	construct "github.com/networkteam/construct/v2"
 	model "github.com/networkteam/construct/v2/example/pgx/model"
-	cjson "github.com/networkteam/construct/v2/json"
+	qrb "github.com/networkteam/qrb"
+	builder "github.com/networkteam/qrb/builder"
+	fn "github.com/networkteam/qrb/fn"
 	"time"
 )
 
-const (
-	todo_id          = "todos.id"
-	todo_projectID   = "todos.project_id"
-	todo_title       = "todos.title"
-	todo_completedAt = "todos.completed_at"
+var (
+	todo_id          = qrb.N("todos.id")
+	todo_projectID   = qrb.N("todos.project_id")
+	todo_title       = qrb.N("todos.title")
+	todo_completedAt = qrb.N("todos.completed_at")
 )
-
-var todoSortFields = map[string]string{}
+var todoSortFields = map[string]builder.IdentExp{}
 
 type TodoChangeSet struct {
 	ID          *uuid.UUID
@@ -56,19 +54,8 @@ func TodoToChangeSet(r model.Todo) (c TodoChangeSet) {
 	return
 }
 
-var todoDefaultSelectJson = cjson.JsonBuildObject().
-	Set("ID", cjson.Exp("todos.id")).
-	Set("ProjectID", cjson.Exp("todos.project_id")).
-	Set("Title", cjson.Exp("todos.title")).
-	Set("CompletedAt", cjson.Exp("todos.completed_at"))
-
-func todoScanJsonRow(row construct.RowScanner) (result model.Todo, err error) {
-	var data []byte
-	if err := row.Scan(&data); err != nil {
-		if err == sql.ErrNoRows {
-			return result, construct.ErrNotFound
-		}
-		return result, err
-	}
-	return result, json.Unmarshal(data, &result)
-}
+var todoDefaultJson = fn.JsonBuildObject().
+	Prop("ID", todo_id).
+	Prop("ProjectID", todo_projectID).
+	Prop("Title", todo_title).
+	Prop("CompletedAt", todo_completedAt)

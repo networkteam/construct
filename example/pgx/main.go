@@ -8,7 +8,7 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli/v2"
 

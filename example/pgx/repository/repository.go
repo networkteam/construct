@@ -1,21 +1,12 @@
 package repository
 
 import (
-	"context"
-
-	"github.com/Masterminds/squirrel"
 	"github.com/friendsofgo/errors"
 	"github.com/jackc/pgconn"
-	"github.com/jackc/pgtype/pgxtype"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 
 	"github.com/networkteam/construct/v2"
 )
-
-func queryBuilder() squirrel.StatementBuilderType {
-	return squirrel.StatementBuilder.
-		PlaceholderFormat(squirrel.Dollar)
-}
 
 func assertRowsAffected(res pgconn.CommandTag, op string, numberOfRows int64) error {
 	rowsAffected := res.RowsAffected()
@@ -25,45 +16,17 @@ func assertRowsAffected(res pgconn.CommandTag, op string, numberOfRows int64) er
 	return nil
 }
 
-func pgxQuery(ctx context.Context, querier pgxtype.Querier, q squirrel.SelectBuilder) (pgx.Rows, error) {
-	sql, args, err := q.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "building SQL")
-	}
-	rows, err := querier.Query(ctx, sql, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "querying SQL")
-	}
-	return rows, err
+func pgxCollectRow[T any](row pgx.CollectableRow) (T, error) {
+	return pgxScanRow[T](row)
 }
 
-func pgxExec(ctx context.Context, querier pgxtype.Querier, q squirrel.Sqlizer) (pgconn.CommandTag, error) {
-	sql, args, err := q.ToSql()
+func pgxScanRow[T any](row pgx.Row) (T, error) {
+	var result T
+	err := row.Scan(result)
 	if err != nil {
-		return nil, errors.Wrap(err, "building SQL")
+		return result, errors.Wrap(pgxToConstructErr(err), "scanning row")
 	}
-	res, err := querier.Exec(ctx, sql, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "executing SQL")
-	}
-	return res, nil
-}
-
-func pgxQueryRow(ctx context.Context, querier pgxtype.Querier, q squirrel.Sqlizer) (pgx.Row, error) {
-	sql, args, err := q.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "building SQL")
-	}
-	row := querier.QueryRow(ctx, sql, args...)
-	return row, nil
-}
-
-func pgxScanRow(scanner construct.RowScanner, result interface{}) error {
-	err := scanner.Scan(result)
-	if err != nil {
-		return errors.Wrap(pgxToConstructErr(err), "scanning row")
-	}
-	return nil
+	return result, nil
 }
 
 func pgxToConstructErr(err error) error {
