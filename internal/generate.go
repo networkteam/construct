@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	. "github.com/dave/jennifer/jen"
-	"github.com/friendsofgo/errors"
 )
 
 // Generate Go code for the struct mapping
@@ -25,7 +24,7 @@ func Generate(m *StructMapping, goPackage string, goFile string, w io.Writer) (o
 
 	changeSetName, err := generateChangeSetStruct(f, m)
 	if err != nil {
-		return "", errors.Wrap(err, "generating ChangeSet struct")
+		return "", fmt.Errorf("generating ChangeSet struct: %w", err)
 	}
 
 	// toMap() method for ChangeSet

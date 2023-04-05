@@ -3,7 +3,6 @@ module github.com/networkteam/construct/v2/example
 go 1.20
 
 require (
-	github.com/friendsofgo/errors v0.9.2
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/networkteam/construct/v2 v2.0.0
@@ -27,7 +26,6 @@ require (
 	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
-	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 )
 
 replace github.com/networkteam/construct/v2 => ../

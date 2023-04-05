@@ -2,10 +2,10 @@ package construct
 
 import (
 	"bytes"
-	"io/ioutil"
+	"fmt"
+	"os"
 	"strings"
 
-	"github.com/friendsofgo/errors"
 	"github.com/urfave/cli/v2"
 
 	"github.com/networkteam/construct/v2/internal"
@@ -61,31 +61,31 @@ func NewCliApp() *cli.App {
 
 				m, err := internal.BuildStructMapping(mappingTypePackage, mappingTypeName, targetTypeName)
 				if err != nil {
-					return errors.Wrap(err, "building struct mapping")
+					return fmt.Errorf("building struct mapping: %w", err)
 				}
 
 				var buf bytes.Buffer
 				outputFilename, err := internal.Generate(m, goPackage, goFile, &buf)
 				if err != nil {
-					return errors.Wrap(err, "generating code")
+					return fmt.Errorf("generating code: %w", err)
 				}
-				if err := ioutil.WriteFile(outputFilename, buf.Bytes(), 0644); err != nil {
-					return errors.Wrap(err, "writing output file")
+				if err := os.WriteFile(outputFilename, buf.Bytes(), 0644); err != nil {
+					return fmt.Errorf("writing output file: %w", err)
 				}
 			} else {
 				mappings, err := internal.DiscoverStructMappings(mappingTypePackage)
 				if err != nil {
-					return errors.Wrap(err, "discovering struct mappings")
+					return fmt.Errorf("discovering struct mappings: %w", err)
 				}
 
 				for _, m := range mappings {
 					var buf bytes.Buffer
 					outputFilename, err := internal.Generate(m, goPackage, goFile, &buf)
 					if err != nil {
-						return errors.Wrap(err, "generating code")
+						return fmt.Errorf("generating code: %w", err)
 					}
-					if err := ioutil.WriteFile(outputFilename, buf.Bytes(), 0644); err != nil {
-						return errors.Wrap(err, "writing output file")
+					if err := os.WriteFile(outputFilename, buf.Bytes(), 0644); err != nil {
+						return fmt.Errorf("writing output file: %w", err)
 					}
 				}
 			}
@@ -98,7 +98,7 @@ func NewCliApp() *cli.App {
 func getPackageAndTypeName(mappingType string) (string, string, error) {
 	i := strings.LastIndexByte(mappingType, '/')
 	if i == -1 {
-		return "", "", errors.Errorf("invalid mapping type: %q, expected fully qualified type with package and name (e.g. example.com/my/pkg.MyType)", mappingType)
+		return "", "", fmt.Errorf("invalid mapping type: %q, expected fully qualified type with package and name (e.g. example.com/my/pkg.MyType)", mappingType)
 	}
 	lastPackageAndTypeName := mappingType[i+1:]
 

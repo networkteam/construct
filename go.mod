@@ -5,7 +5,6 @@ go 1.20
 require (
 	github.com/dave/jennifer v1.6.0
 	github.com/fatih/structtag v1.2.0
-	github.com/friendsofgo/errors v0.9.2
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/networkteam/qrb v0.0.0-20230405144409-a08ce7a89639
 	github.com/stretchr/testify v1.8.1
@@ -21,6 +20,5 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect
-	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

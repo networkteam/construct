@@ -1,10 +1,10 @@
 package internal
 
 import (
+	"fmt"
 	"go/types"
 
 	"github.com/fatih/structtag"
-	"github.com/friendsofgo/errors"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -53,25 +53,25 @@ func BuildStructMapping(mappingTypePackage string, mappingTypeName string, targe
 	cfg := &packages.Config{Mode: packages.NeedTypes | packages.NeedSyntax | packages.NeedImports}
 	pkgs, err := packages.Load(cfg, mappingTypePackage)
 	if err != nil {
-		return nil, errors.Wrap(err, "loading package for type info")
+		return nil, fmt.Errorf("loading package for type info: %w", err)
 	}
 
 	if len(pkgs) != 1 {
-		return nil, errors.Errorf("expected single package after load, got %d", len(pkgs))
+		return nil, fmt.Errorf("expected single package after load, got %d", len(pkgs))
 	}
 	pkg := pkgs[0]
 
 	obj := pkg.Types.Scope().Lookup(mappingTypeName)
 	if obj == nil {
-		return nil, errors.Errorf("%s not found in lookup", mappingTypeName)
+		return nil, fmt.Errorf("%s not found in lookup", mappingTypeName)
 	}
 
 	if _, ok := obj.(*types.TypeName); !ok {
-		return nil, errors.Errorf("%v is not a named type", obj)
+		return nil, fmt.Errorf("%v is not a named type", obj)
 	}
 	structType, ok := obj.Type().Underlying().(*types.Struct)
 	if !ok {
-		return nil, errors.Errorf("type %v is a %T, not a struct", obj, obj.Type().Underlying())
+		return nil, fmt.Errorf("type %v is a %T, not a struct", obj, obj.Type().Underlying())
 	}
 
 	return buildStructMapping(targetTypeName, mappingTypePackage, mappingTypeName, structType)
@@ -82,11 +82,11 @@ func DiscoverStructMappings(mappingTypePackage string) (mappings []*StructMappin
 	cfg := &packages.Config{Mode: packages.NeedTypes | packages.NeedSyntax | packages.NeedImports}
 	pkgs, err := packages.Load(cfg, mappingTypePackage)
 	if err != nil {
-		return nil, errors.Wrap(err, "loading package for type info")
+		return nil, fmt.Errorf("loading package for type info: %w", err)
 	}
 
 	if len(pkgs) != 1 {
-		return nil, errors.Errorf("expected single package after load, got %d", len(pkgs))
+		return nil, fmt.Errorf("expected single package after load, got %d", len(pkgs))
 	}
 	pkg := pkgs[0]
 
@@ -104,7 +104,7 @@ func DiscoverStructMappings(mappingTypePackage string) (mappings []*StructMappin
 
 		m, err := buildStructMapping(name, mappingTypePackage, name, structType)
 		if err != nil {
-			return nil, errors.Wrapf(err, "building struct mapping for %s", name)
+			return nil, fmt.Errorf("building struct mapping for %s: %w", name, err)
 		}
 
 		// Only include mappings with read or write columns defined
@@ -130,7 +130,7 @@ func buildStructMapping(targetTypeName, mappingTypePackage, mappingTypeName stri
 		fieldTagValue := structType.Tag(i)
 		tags, err := structtag.Parse(fieldTagValue)
 		if err != nil {
-			return nil, errors.Wrapf(err, "parsing tags of field %s", fieldName)
+			return nil, fmt.Errorf("parsing tags of field %s: %w", fieldName, err)
 		}
 
 		fm := FieldMapping{

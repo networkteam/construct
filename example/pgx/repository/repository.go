@@ -1,7 +1,8 @@
 package repository
 
 import (
-	"github.com/friendsofgo/errors"
+	"fmt"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 
@@ -11,7 +12,7 @@ import (
 func assertRowsAffected(res pgconn.CommandTag, op string, numberOfRows int64) error {
 	rowsAffected := res.RowsAffected()
 	if rowsAffected != numberOfRows {
-		return errors.Errorf("%s affected %d rows, but expected exactly %d", op, rowsAffected, numberOfRows)
+		return fmt.Errorf("%s affected %d rows, but expected exactly %d", op, rowsAffected, numberOfRows)
 	}
 	return nil
 }
@@ -24,7 +25,7 @@ func pgxScanRow[T any](row pgx.Row) (T, error) {
 	var result T
 	err := row.Scan(&result)
 	if err != nil {
-		return result, errors.Wrap(pgxToConstructErr(err), "scanning row")
+		return result, fmt.Errorf("scanning row: %w", pgxToConstructErr(err))
 	}
 	return result, nil
 }

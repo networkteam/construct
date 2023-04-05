@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/olekukonko/tablewriter"
@@ -41,7 +40,7 @@ func main() {
 			if conn != nil {
 				err := conn.Close(c.Context)
 				if err != nil {
-					return errors.Wrap(err, "closing DB connection")
+					return fmt.Errorf("closing DB connection: %w", err)
 				}
 			}
 
@@ -60,7 +59,7 @@ func main() {
 							}
 							err := repository.InsertProject(c.Context, conn, repository.ProjectToChangeSet(project))
 							if err != nil {
-								return errors.Wrap(err, "inserting project")
+								return fmt.Errorf("inserting project: %w", err)
 							}
 
 							return nil
@@ -71,7 +70,7 @@ func main() {
 						Action: func(c *cli.Context) error {
 							projects, err := repository.FindAllProjects(c.Context, conn)
 							if err != nil {
-								return errors.Wrap(err, "finding all projects")
+								return fmt.Errorf("finding all projects: %w", err)
 							}
 
 							table := tablewriter.NewWriter(os.Stdout)
@@ -99,12 +98,12 @@ func main() {
 							}
 							id, err := uuid.FromString(c.Args().Get(0))
 							if err != nil {
-								return errors.Wrap(err, "parsing id")
+								return fmt.Errorf("parsing id: %w", err)
 							}
 
 							project, err := repository.FindProjectByID(c.Context, conn, id)
 							if err != nil {
-								return errors.Wrap(err, "finding project")
+								return fmt.Errorf("finding project: %w", err)
 							}
 
 							table := tablewriter.NewWriter(os.Stdout)
@@ -135,7 +134,7 @@ func main() {
 							}
 							projectID, err := uuid.FromString(c.Args().Get(0))
 							if err != nil {
-								return errors.Wrap(err, "parsing project id")
+								return fmt.Errorf("parsing project id: %w", err)
 							}
 							title := c.Args().Get(1)
 
@@ -146,7 +145,7 @@ func main() {
 							}
 							err = repository.InsertTodo(c.Context, conn, repository.TodoToChangeSet(todo))
 							if err != nil {
-								return errors.Wrap(err, "inserting todo")
+								return fmt.Errorf("inserting todo: %w", err)
 							}
 
 							return nil
@@ -165,14 +164,14 @@ func main() {
 							if projectIDStr := c.String("project-id"); projectIDStr != "" {
 								projectID, err := uuid.FromString(c.Args().Get(0))
 								if err != nil {
-									return errors.Wrap(err, "parsing project id")
+									return fmt.Errorf("parsing project id: %w", err)
 								}
 								filter.ProjectID = &projectID
 							}
 
 							todos, err := repository.FindAllTodos(c.Context, conn, filter)
 							if err != nil {
-								return errors.Wrap(err, "finding all todos")
+								return fmt.Errorf("finding all todos: %w", err)
 							}
 
 							table := tablewriter.NewWriter(os.Stdout)
@@ -206,7 +205,7 @@ func main() {
 							}
 							todoID, err := uuid.FromString(c.Args().Get(0))
 							if err != nil {
-								return errors.Wrap(err, "parsing todo id")
+								return fmt.Errorf("parsing todo id: %w", err)
 							}
 
 							now := time.Now()
@@ -215,7 +214,7 @@ func main() {
 								CompletedAt: &completedAt,
 							})
 							if err != nil {
-								return errors.Wrap(err, "updating todo")
+								return fmt.Errorf("updating todo: %w", err)
 							}
 
 							return nil
@@ -235,7 +234,7 @@ func main() {
 func connectDB(c *cli.Context) (*pgx.Conn, error) {
 	conn, err := pgx.Connect(c.Context, c.String("postgres-dsn"))
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to connect to database")
+		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
 
 	return conn, nil
