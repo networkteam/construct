@@ -7,7 +7,7 @@ require (
 	github.com/fatih/structtag v1.2.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/networkteam/qrb v0.0.0-20230404174234-b2a5f40596df
+	github.com/networkteam/qrb v0.0.0-20230405144409-a08ce7a89639
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli/v2 v2.25.1
 	golang.org/x/tools v0.7.0

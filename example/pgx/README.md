@@ -29,3 +29,7 @@ Add a todo:
 List todos:
 
     go run . todo list
+
+Mark todo as completed:
+
+    go run . todo complete [todo id]

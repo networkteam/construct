@@ -2,8 +2,8 @@ package repository
 
 import (
 	"github.com/friendsofgo/errors"
-	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/networkteam/construct/v2"
 )
@@ -22,7 +22,7 @@ func pgxCollectRow[T any](row pgx.CollectableRow) (T, error) {
 
 func pgxScanRow[T any](row pgx.Row) (T, error) {
 	var result T
-	err := row.Scan(result)
+	err := row.Scan(&result)
 	if err != nil {
 		return result, errors.Wrap(pgxToConstructErr(err), "scanning row")
 	}

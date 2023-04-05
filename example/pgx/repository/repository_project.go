@@ -26,7 +26,7 @@ func projectBuildFindQuery() builder.SelectBuilder {
 				Select(todo_projectID).
 				From(qrb.N("todos")).
 				GroupBy(todo_projectID),
-		).As("todo_counts").Using("project_id")
+		).As("todo_counts").On(project_id.Eq(qrb.N("todo_counts.project_id")))
 }
 
 // FindProjectByID finds a single project by id
@@ -56,17 +56,12 @@ func FindAllProjects(ctx context.Context, executor qrbpgx.Executor) (result []mo
 
 // InsertProject inserts a new project from a ProjectChangeSet
 func InsertProject(ctx context.Context, executor qrbpgx.Executor, changeSet ProjectChangeSet) error {
-	/*
-		q := queryBuilder().
-			Insert("projects").
-			SetMap(changeSet.toMap())
-		_, err := pgxExec(ctx, querier, q)
-			return err
-	*/
+	q := qrb.
+		InsertInto("projects").
+		SetMap(changeSet.toMap())
 
-	// TODO Implement insert in qrb
-
-	return nil
+	_, err := qrbpgx.Build(q).WithExecutor(executor).Exec(ctx)
+	return err
 }
 
 func projectJson() builder.JsonBuildObjectBuilder {

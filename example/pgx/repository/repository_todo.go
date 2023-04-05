@@ -50,36 +50,27 @@ func FindAllTodos(ctx context.Context, executor qrbpgx.Executor, filter model.To
 
 // InsertTodo inserts a new todo with values from changeSet
 func InsertTodo(ctx context.Context, executor qrbpgx.Executor, changeSet TodoChangeSet) error {
-	/*
-		q := queryBuilder().
-			Insert("todos").
-			SetMap(changeSet.toMap())
-		_, err := pgxExec(ctx, querier, q)
-		return err
-	*/
+	q := qrb.
+		InsertInto("todos").
+		SetMap(changeSet.toMap())
 
-	// TODO Implement insert
-
-	return nil
+	_, err := qrbpgx.Build(q).WithExecutor(executor).Exec(ctx)
+	return err
 }
 
 // UpdateTodo updates a todo with the given id and changes from changeSet
 func UpdateTodo(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID, changeSet TodoChangeSet) error {
-	/*
-		q := queryBuilder().
-			Update("todos").
-			Where(squirrel.Eq{todo_id: id}).
-			SetMap(changeSet.toMap())
-		res, err := pgxExec(ctx, querier, q)
-		if err != nil {
-			return err
-		}
-		return assertRowsAffected(res, "update", 1)
-	*/
+	q := qrb.
+		Update("todos").
+		SetMap(changeSet.toMap()).
+		Where(todo_id.Eq(qrb.Arg(id)))
 
-	// TODO Implement update
+	res, err := qrbpgx.Build(q).WithExecutor(executor).Exec(ctx)
+	if err != nil {
+		return err
+	}
 
-	return nil
+	return assertRowsAffected(res, "update", 1)
 }
 
 func todoJson() builder.JsonBuildObjectBuilder {
