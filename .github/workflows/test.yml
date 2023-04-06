@@ -3,6 +3,7 @@ on:
     tags:
       - v*
     branches:
+      - v*
       - main
   pull_request:
 
