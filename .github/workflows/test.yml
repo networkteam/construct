@@ -52,11 +52,6 @@ jobs:
           go-version: '1.20'
       - name: Calc coverage
         run: |
-          go test -v -covermode=count -coverprofile=coverage.out ./...
-      - name: Convert coverage.out to coverage.lcov
-        uses: jandelgado/gcov2lcov-action@v1.0.6
-      - name: Coveralls
-        uses: coverallsapp/github-action@v1.1.2
-        with:
-          github-token: ${{ secrets.github_token }}
-          path-to-lcov: coverage.lcov
+          go test -v -covermode=atomic -coverprofile=coverage.txt ./...
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
