@@ -6,7 +6,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/networkteam/construct/v2 v2.0.0
-	github.com/networkteam/qrb v0.0.0-20230405144409-a08ce7a89639
+	github.com/networkteam/qrb v0.2.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/urfave/cli/v2 v2.25.1
 )
