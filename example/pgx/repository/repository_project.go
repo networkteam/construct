@@ -13,27 +13,25 @@ import (
 	"github.com/networkteam/construct/v2/example/pgx/model"
 )
 
-var projects = N("projects")
-
 // projectBuildFindQuery creates a partial builder.SelectBuilder that
 // - selects a single JSON result by using buildProjectJson
 // - from the projects table
 // - and left joins an aggregation of todo counts by project
 func projectBuildFindQuery() builder.SelectBuilder {
 	return SelectJson(projectJson()).
-		From(projects).
+		From(project).
 		LeftJoin(
-			Select(fn.Count(todo_projectID)).As("count").
-				Select(todo_projectID).
-				From(todos).
-				GroupBy(todo_projectID),
-		).As("todo_counts").On(project_id.Eq(N("todo_counts.project_id")))
+			Select(fn.Count(todo.projectID)).As("count").
+				Select(todo.projectID).
+				From(todo).
+				GroupBy(todo.projectID),
+		).As("todo_counts").On(project.id.Eq(N("todo_counts.project_id")))
 }
 
 // FindProjectByID finds a single project by id
 func FindProjectByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID) (result model.Project, err error) {
 	q := projectBuildFindQuery().
-		Where(project_id.Eq(Arg(id)))
+		Where(project.id.Eq(Arg(id)))
 
 	row, err := qrbpgx.Build(q).WithExecutor(executor).QueryRow(ctx)
 	if err != nil {
@@ -45,7 +43,7 @@ func FindProjectByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID
 // FindAllProjects finds all projects sorted by title
 func FindAllProjects(ctx context.Context, executor qrbpgx.Executor) (result []model.Project, err error) {
 	q := projectBuildFindQuery().
-		OrderBy(project_title)
+		OrderBy(project.title)
 
 	rows, err := qrbpgx.Build(q).WithExecutor(executor).Query(ctx)
 	if err != nil {
@@ -57,7 +55,7 @@ func FindAllProjects(ctx context.Context, executor qrbpgx.Executor) (result []mo
 
 // InsertProject inserts a new project from a ProjectChangeSet
 func InsertProject(ctx context.Context, executor qrbpgx.Executor, changeSet ProjectChangeSet) error {
-	q := InsertInto(projects).
+	q := InsertInto(project).
 		SetMap(changeSet.toMap())
 
 	_, err := qrbpgx.Build(q).WithExecutor(executor).Exec(ctx)

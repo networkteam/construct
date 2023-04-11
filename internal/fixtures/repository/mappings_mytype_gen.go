@@ -11,16 +11,25 @@ import (
 	"time"
 )
 
-var (
-	myType_id       = qrb.N("my_type.id")
-	myType_foo      = qrb.N("my_type.foo")
-	myType_bar      = qrb.N("my_type.the_bar")
-	myType_baz      = qrb.N("my_type.baz")
-	myType_lastTime = qrb.N("my_type.last_time")
-)
+var myType = struct {
+	builder.Identer
+	id       builder.IdentExp
+	foo      builder.IdentExp
+	bar      builder.IdentExp
+	baz      builder.IdentExp
+	lastTime builder.IdentExp
+}{
+	Identer:  qrb.N("my_type"),
+	bar:      qrb.N("my_type.the_bar"),
+	baz:      qrb.N("my_type.baz"),
+	foo:      qrb.N("my_type.foo"),
+	id:       qrb.N("my_type.id"),
+	lastTime: qrb.N("my_type.last_time"),
+}
+
 var myTargetTypeSortFields = map[string]builder.IdentExp{
-	"foo":      myType_foo,
-	"lasttime": myType_lastTime,
+	"foo":      myType.foo,
+	"lasttime": myType.lastTime,
 }
 
 type MyTargetTypeChangeSet struct {
@@ -64,8 +73,8 @@ func MyTargetTypeToChangeSet(r fixtures.MyType) (c MyTargetTypeChangeSet) {
 }
 
 var myTargetTypeDefaultJson = fn.JsonBuildObject().
-	Prop("ID", myType_id).
-	Prop("Foo", myType_foo).
-	Prop("Bar", qrb.Func("ENCODE", myType_bar, qrb.String("BASE64"))).
-	Prop("Baz", myType_baz).
-	Prop("LastTime", myType_lastTime)
+	Prop("ID", myType.id).
+	Prop("Foo", myType.foo).
+	Prop("Bar", qrb.Func("ENCODE", myType.bar, qrb.String("BASE64"))).
+	Prop("Baz", myType.baz).
+	Prop("LastTime", myType.lastTime)

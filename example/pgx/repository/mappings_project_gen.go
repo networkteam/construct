@@ -9,10 +9,16 @@ import (
 	fn "github.com/networkteam/qrb/fn"
 )
 
-var (
-	project_id    = qrb.N("projects.id")
-	project_title = qrb.N("projects.title")
-)
+var project = struct {
+	builder.Identer
+	id    builder.IdentExp
+	title builder.IdentExp
+}{
+	Identer: qrb.N("projects"),
+	id:      qrb.N("projects.id"),
+	title:   qrb.N("projects.title"),
+}
+
 var projectSortFields = map[string]builder.IdentExp{}
 
 type ProjectChangeSet struct {
@@ -40,5 +46,5 @@ func ProjectToChangeSet(r model.Project) (c ProjectChangeSet) {
 }
 
 var projectDefaultJson = fn.JsonBuildObject().
-	Prop("ID", project_id).
-	Prop("Title", project_title)
+	Prop("ID", project.id).
+	Prop("Title", project.title)

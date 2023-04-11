@@ -6,7 +6,7 @@ import (
 
 // Project model with todos
 type Project struct {
-	ID    uuid.UUID `read_col:"projects.id" write_col:"id"`
+	ID    uuid.UUID `table_name:"projects" read_col:"projects.id" write_col:"id"`
 	Title string    `read_col:"projects.title" write_col:"title"`
 
 	// for embedded loading of counts

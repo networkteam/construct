@@ -6,7 +6,7 @@ require (
 	github.com/dave/jennifer v1.6.0
 	github.com/fatih/structtag v1.2.0
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/networkteam/qrb v0.3.0
+	github.com/networkteam/qrb v0.3.2
 	github.com/stretchr/testify v1.8.2
 	github.com/urfave/cli/v2 v2.25.1
 	golang.org/x/tools v0.7.0

@@ -10,12 +10,20 @@ import (
 	"time"
 )
 
-var (
-	todo_id          = qrb.N("todos.id")
-	todo_projectID   = qrb.N("todos.project_id")
-	todo_title       = qrb.N("todos.title")
-	todo_completedAt = qrb.N("todos.completed_at")
-)
+var todo = struct {
+	builder.Identer
+	id          builder.IdentExp
+	projectID   builder.IdentExp
+	title       builder.IdentExp
+	completedAt builder.IdentExp
+}{
+	Identer:     qrb.N("todos"),
+	completedAt: qrb.N("todos.completed_at"),
+	id:          qrb.N("todos.id"),
+	projectID:   qrb.N("todos.project_id"),
+	title:       qrb.N("todos.title"),
+}
+
 var todoSortFields = map[string]builder.IdentExp{}
 
 type TodoChangeSet struct {
@@ -55,7 +63,7 @@ func TodoToChangeSet(r model.Todo) (c TodoChangeSet) {
 }
 
 var todoDefaultJson = fn.JsonBuildObject().
-	Prop("ID", todo_id).
-	Prop("ProjectID", todo_projectID).
-	Prop("Title", todo_title).
-	Prop("CompletedAt", todo_completedAt)
+	Prop("ID", todo.id).
+	Prop("ProjectID", todo.projectID).
+	Prop("Title", todo.title).
+	Prop("CompletedAt", todo.completedAt)

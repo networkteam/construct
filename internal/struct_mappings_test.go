@@ -17,6 +17,7 @@ func myTypeStructMapping() *internal.StructMapping {
 		TargetName:         "MyTargetType",
 		MappingTypePackage: "github.com/networkteam/construct/v2/internal/fixtures",
 		MappingTypeName:    "MyType",
+		TableName:          "my_type",
 		FieldMappings: []internal.FieldMapping{
 			{
 				Name: "ID",

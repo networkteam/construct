@@ -16,6 +16,8 @@ type StructMapping struct {
 	MappingTypePackage string
 	// MappingTypePackage is the name of the type with mapping information
 	MappingTypeName string
+	// TableName contains the table name (if set)
+	TableName string
 	// FieldMappings contains all field mappings derived from the type
 	FieldMappings []FieldMapping
 }
@@ -151,9 +153,17 @@ func buildStructMapping(targetTypeName, mappingTypePackage, mappingTypeName stri
 					ToJSON: tag.HasOption("json"),
 				}
 			}
+			if tag.Key == "table_name" {
+				if m.TableName != "" {
+					return nil, fmt.Errorf("table_name tag defined multiple times")
+				}
+				m.TableName = tag.Name
+			}
 		}
 
-		m.FieldMappings = append(m.FieldMappings, fm)
+		if fm.ReadColDef != nil || fm.WriteColDef != nil {
+			m.FieldMappings = append(m.FieldMappings, fm)
+		}
 	}
 
 	return &m, nil

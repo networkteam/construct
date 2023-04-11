@@ -4,10 +4,14 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+
+	"github.com/networkteam/construct/v2"
 )
 
 // MyType is a fixture struct type
 type MyType struct {
+	construct.Table `table_name:"my_type"`
+
 	// ID is readable and writable
 	ID uuid.UUID `read_col:"my_type.id" write_col:"id"`
 	// Foo is readable and sortable
