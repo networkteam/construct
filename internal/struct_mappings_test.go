@@ -3,7 +3,11 @@ package internal_test
 import (
 	"go/token"
 	"go/types"
+	"sort"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/networkteam/construct/v2/internal"
 )
@@ -141,4 +145,21 @@ func TestBuildStructMapping(t *testing.T) {
 			t.Errorf("expected field mapping %d field type to be %s, but got %s", i, expectedFieldMapping.FieldType.String(), actualFieldMapping.FieldType.String())
 		}
 	}
+}
+
+func TestDiscoverStructMappings(t *testing.T) {
+	structMappings, err := internal.DiscoverStructMappings("github.com/networkteam/construct/v2/internal/fixtures")
+	require.NoError(t, err)
+
+	require.Len(t, structMappings, 2)
+
+	// order by MappingTypeName
+	sort.Slice(structMappings, func(i, j int) bool {
+		return structMappings[i].MappingTypeName < structMappings[j].MappingTypeName
+	})
+
+	assert.Equal(t, "MyOtherType", structMappings[0].MappingTypeName)
+	assert.Equal(t, "MyOtherType", structMappings[0].TargetName)
+	assert.Equal(t, "MyType", structMappings[1].MappingTypeName)
+	assert.Equal(t, "MyType", structMappings[1].TargetName)
 }
