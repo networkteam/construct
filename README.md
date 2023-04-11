@@ -1,9 +1,10 @@
 # construct : Go generators for low abstraction persistence with PostgreSQL
 
-[![GoDoc](https://godoc.org/github.com/networkteam/construct?status.svg)](https://godoc.org/github.com/networkteam/construct)
-[![Build Status](https://github.com/networkteam/construct/workflows/run%20tests/badge.svg)](https://github.com/networkteam/construct/actions?workflow=run%20tests)
+[![Go Reference](https://pkg.go.dev/badge/github.com/networkteam/construct/v2.svg)](https://pkg.go.dev/github.com/networkteam/construct/v2)
+[![Build status](https://github.com/networkteam/construct/actions/workflows/test.yml/badge.svg?branch=v2)](https://github.com/networkteam/construct/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/networkteam/construct/badge.svg?branch=main)](https://coveralls.io/github/networkteam/construct?branch=main)
-[![Go Report Card](https://goreportcard.com/badge/github.com/networkteam/construct)](https://goreportcard.com/report/github.com/networkteam/construct)
+[![Coverage](https://codecov.io/gh/networkteam/construct/branch/v2/graph/badge.svg?token=Y0GHTB40GG)](https://codecov.io/gh/networkteam/construct)
+[![Go Report Card](https://goreportcard.com/badge/github.com/networkteam/construct/v2)](https://goreportcard.com/report/github.com/networkteam/construct/v2)
 
 ## Overview
 
