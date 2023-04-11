@@ -14,8 +14,8 @@ import (
 
 var todos = qrb.N("todos")
 
-// todoBuildFindQuery creates a partial squirrel.SelectBuilder that
-// - selects a single JSON result by using buildTodoJson
+// todoBuildFindQuery creates a partial builder.SelectBuilder that
+// - selects a single JSON result by using todoJson()
 // - from the todos table
 // - and left join the projects for eagerly fetching the project for each todo in a single query
 func todoBuildFindQuery() builder.SelectBuilder {

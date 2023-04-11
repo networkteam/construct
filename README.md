@@ -2,7 +2,6 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/networkteam/construct/v2.svg)](https://pkg.go.dev/github.com/networkteam/construct/v2)
 [![Build status](https://github.com/networkteam/construct/actions/workflows/test.yml/badge.svg?branch=v2)](https://github.com/networkteam/construct/actions/workflows/test.yml)
-[![Coverage Status](https://coveralls.io/repos/github/networkteam/construct/badge.svg?branch=main)](https://coveralls.io/github/networkteam/construct?branch=main)
 [![Coverage](https://codecov.io/gh/networkteam/construct/branch/v2/graph/badge.svg?token=Y0GHTB40GG)](https://codecov.io/gh/networkteam/construct)
 [![Go Report Card](https://goreportcard.com/badge/github.com/networkteam/construct/v2)](https://goreportcard.com/report/github.com/networkteam/construct/v2)
 
@@ -63,8 +62,8 @@ Structure your persistence code as it fits the project. A very simple and workin
 functions that operator on the target type for finding, inserting, updating and deleting. Add more complex queries
 as you like in the same way. 
 
-There's no need to use Squirrel, but it helps to build correct SQL queries instead of relying on string manipulation
-and manually handling placeholders and arguments.
+Construct will automatically generate identifier expressions of fields (read columns) via [github.com/networkteam/qrb](https://github.com/networkteam/qrb)
+and a default `json_build_object` expression to select a model via JSON. This can be further modified to add additional properties. 
 
 *repository/customer_repository.go*
 ```go
