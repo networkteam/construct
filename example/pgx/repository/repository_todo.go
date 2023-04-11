@@ -12,6 +12,8 @@ import (
 	"github.com/networkteam/construct/v2/example/pgx/model"
 )
 
+var todos = qrb.N("todos")
+
 // todoBuildFindQuery creates a partial squirrel.SelectBuilder that
 // - selects a single JSON result by using buildTodoJson
 // - from the todos table
@@ -19,8 +21,8 @@ import (
 func todoBuildFindQuery() builder.SelectBuilder {
 	return qrb.
 		SelectJson(todoJson()).
-		From(qrb.N("todos")).
-		LeftJoin(qrb.N("projects")).On(todo_projectID.Eq(project_id))
+		From(todos).
+		LeftJoin(projects).On(todo_projectID.Eq(project_id))
 }
 
 // FindTodoByID finds a single todo by id
@@ -51,7 +53,7 @@ func FindAllTodos(ctx context.Context, executor qrbpgx.Executor, filter model.To
 // InsertTodo inserts a new todo with values from changeSet
 func InsertTodo(ctx context.Context, executor qrbpgx.Executor, changeSet TodoChangeSet) error {
 	q := qrb.
-		InsertInto("todos").
+		InsertInto(todos).
 		SetMap(changeSet.toMap())
 
 	_, err := qrbpgx.Build(q).WithExecutor(executor).Exec(ctx)
@@ -61,7 +63,7 @@ func InsertTodo(ctx context.Context, executor qrbpgx.Executor, changeSet TodoCha
 // UpdateTodo updates a todo with the given id and changes from changeSet
 func UpdateTodo(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID, changeSet TodoChangeSet) error {
 	q := qrb.
-		Update("todos").
+		Update(todos).
 		SetMap(changeSet.toMap()).
 		Where(todo_id.Eq(qrb.Arg(id)))
 

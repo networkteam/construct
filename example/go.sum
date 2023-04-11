@@ -18,8 +18,8 @@ github.com/jackc/puddle/v2 v2.2.0 h1:RdcDk92EJBuBS55nQMMYFXTxwstHug4jkhT5pq8VxPk
 github.com/mattn/go-runewidth v0.0.9/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m2gUSrubnMI=
 github.com/mattn/go-runewidth v0.0.14 h1:+xnbZSEeDbOIg5/mE6JF0w6n9duR1l3/WmbinWVwUuU=
 github.com/mattn/go-runewidth v0.0.14/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
-github.com/networkteam/qrb v0.2.5 h1:6nNea5EudRbCcg/iwGEJuTeU4ehZWFzg4aENYCBZqNU=
-github.com/networkteam/qrb v0.2.5/go.mod h1:HHzldycxdHKkIaDRUfEIdtSZLwdGUQ/yFiwt9yf/Ako=
+github.com/networkteam/qrb v0.3.0 h1:ISKHpdFsgSTVaD1u0IJGVAVimkkUnRnsY5u3HFFSzWM=
+github.com/networkteam/qrb v0.3.0/go.mod h1:rRD44E0t1wI+YHLOH/CPUIbYx/dKgetNYkFXVixDPfc=
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=
 github.com/olekukonko/tablewriter v0.0.5/go.mod h1:hPp6KlRPjbx+hW8ykQs1w3UBbZlj6HuIJcUGPhkA7kY=
 github.com/pashagolub/pgxmock/v2 v2.6.0 h1:Dk07FlzdMOrqdxrelmEeWP9uqcDm757HZWrIwyvdPsE=
