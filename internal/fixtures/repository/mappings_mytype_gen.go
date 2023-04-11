@@ -13,31 +13,38 @@ import (
 
 var myType = struct {
 	builder.Identer
-	ID       builder.IdentExp
-	Foo      builder.IdentExp
-	Bar      builder.IdentExp
-	Baz      builder.IdentExp
-	LastTime builder.IdentExp
+	ID         builder.IdentExp
+	Foo        builder.IdentExp
+	Bar        builder.IdentExp
+	Baz        builder.IdentExp
+	LastTime   builder.IdentExp
+	LastUpdate builder.IdentExp
+	Donuts     builder.IdentExp
 }{
-	Bar:      qrb.N("my_type.the_bar"),
-	Baz:      qrb.N("my_type.baz"),
-	Foo:      qrb.N("my_type.foo"),
-	ID:       qrb.N("my_type.id"),
-	Identer:  qrb.N("my_type"),
-	LastTime: qrb.N("my_type.last_time"),
+	Bar:        qrb.N("my_type.the_bar"),
+	Baz:        qrb.N("my_type.baz"),
+	Donuts:     qrb.N("my_type.donuts"),
+	Foo:        qrb.N("my_type.foo"),
+	ID:         qrb.N("my_type.id"),
+	Identer:    qrb.N("my_type"),
+	LastTime:   qrb.N("my_type.last_time"),
+	LastUpdate: qrb.N("my_type.updated_at"),
 }
 
 var myTargetTypeSortFields = map[string]builder.IdentExp{
-	"foo":      myType.Foo,
-	"lasttime": myType.LastTime,
+	"foo":        myType.Foo,
+	"lasttime":   myType.LastTime,
+	"lastupdate": myType.LastUpdate,
 }
 
 type MyTargetTypeChangeSet struct {
-	ID       *uuid.UUID
-	Foo      *string
-	Bar      []byte
-	Baz      *fixtures.MyEmbeddedType
-	LastTime **time.Time
+	ID         *uuid.UUID
+	Foo        *string
+	Bar        []byte
+	Baz        *fixtures.MyEmbeddedType
+	LastTime   **time.Time
+	LastUpdate *time.Time
+	Donuts     []fixtures.Donut
 }
 
 func (c MyTargetTypeChangeSet) toMap() map[string]interface{} {
@@ -58,6 +65,13 @@ func (c MyTargetTypeChangeSet) toMap() map[string]interface{} {
 	if c.LastTime != nil {
 		m["last_time"] = *c.LastTime
 	}
+	if c.LastUpdate != nil {
+		m["updated_at"] = *c.LastUpdate
+	}
+	if c.Donuts != nil {
+		data, _ := json.Marshal(c.Donuts)
+		m["donuts"] = data
+	}
 	return m
 }
 
@@ -69,6 +83,10 @@ func MyTargetTypeToChangeSet(r fixtures.MyType) (c MyTargetTypeChangeSet) {
 	c.Bar = r.Bar
 	c.Baz = &r.Baz
 	c.LastTime = &r.LastTime
+	if !r.LastUpdate.IsZero() {
+		c.LastUpdate = &r.LastUpdate
+	}
+	c.Donuts = r.Donuts
 	return
 }
 
@@ -77,4 +95,6 @@ var myTargetTypeDefaultJson = fn.JsonBuildObject().
 	Prop("Foo", myType.Foo).
 	Prop("Bar", qrb.Func("ENCODE", myType.Bar, qrb.String("BASE64"))).
 	Prop("Baz", myType.Baz).
-	Prop("LastTime", myType.LastTime)
+	Prop("LastTime", myType.LastTime).
+	Prop("LastUpdate", myType.LastUpdate).
+	Prop("Donuts", myType.Donuts)

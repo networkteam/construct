@@ -12,6 +12,7 @@ import (
 
 func TestGenerate(t *testing.T) {
 	m := myTypeStructMapping()
+
 	var buf bytes.Buffer
 	outputFilename, err := internal.Generate(m, "repository", "mappings.go", &buf)
 	if err != nil {

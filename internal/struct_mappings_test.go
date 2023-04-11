@@ -13,6 +13,10 @@ import (
 )
 
 func myTypeStructMapping() *internal.StructMapping {
+	uuidPkg := types.NewPackage("github.com/gofrs/uuid", "uuid")
+	fixturesPkg := types.NewPackage("github.com/networkteam/construct/v2/internal/fixtures", "fixtures")
+	timePkg := types.NewPackage("time", "time")
+
 	return &internal.StructMapping{
 		TargetName:         "MyTargetType",
 		MappingTypePackage: "github.com/networkteam/construct/v2/internal/fixtures",
@@ -28,7 +32,7 @@ func myTypeStructMapping() *internal.StructMapping {
 				WriteColDef: &internal.WriteColDef{
 					Col: "id",
 				},
-				FieldType: types.NewNamed(types.NewTypeName(token.NoPos, types.NewPackage("github.com/gofrs/uuid", "uuid"), "UUID", nil), nil, nil),
+				FieldType: types.NewNamed(types.NewTypeName(token.NoPos, uuidPkg, "UUID", nil), nil, nil),
 			},
 			{
 				Name: "Foo",
@@ -62,7 +66,7 @@ func myTypeStructMapping() *internal.StructMapping {
 					Col:    "baz",
 					ToJSON: true,
 				},
-				FieldType: types.NewNamed(types.NewTypeName(token.NoPos, types.NewPackage("github.com/networkteam/construct/v2/internal/fixtures", "MyEmbeddedType"), "MyEmbeddedType", nil), nil, nil),
+				FieldType: types.NewNamed(types.NewTypeName(token.NoPos, fixturesPkg, "MyEmbeddedType", nil), nil, nil),
 			},
 			{
 				Name: "LastTime",
@@ -73,7 +77,30 @@ func myTypeStructMapping() *internal.StructMapping {
 				WriteColDef: &internal.WriteColDef{
 					Col: "last_time",
 				},
-				FieldType: types.NewPointer(types.NewNamed(types.NewTypeName(token.NoPos, types.NewPackage("time", "time"), "Time", nil), nil, nil)),
+				FieldType: types.NewPointer(types.NewNamed(types.NewTypeName(token.NoPos, timePkg, "Time", nil), nil, nil)),
+			},
+			{
+				Name: "LastUpdate",
+				ReadColDef: &internal.ReadColDef{
+					Col:      "my_type.updated_at",
+					Sortable: true,
+				},
+				WriteColDef: &internal.WriteColDef{
+					Col: "updated_at",
+				},
+				FieldType: types.NewNamed(types.NewTypeName(token.NoPos, timePkg, "Time", nil), nil, nil),
+			},
+			{
+				Name: "Donuts",
+				ReadColDef: &internal.ReadColDef{
+					Col:      "my_type.donuts",
+					Sortable: false,
+				},
+				WriteColDef: &internal.WriteColDef{
+					Col:    "donuts",
+					ToJSON: true,
+				},
+				FieldType: types.NewSlice(types.NewNamed(types.NewTypeName(token.NoPos, fixturesPkg, "Donut", nil), nil, nil)),
 			},
 		},
 	}

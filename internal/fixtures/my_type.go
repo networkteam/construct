@@ -22,10 +22,19 @@ type MyType struct {
 	Baz MyEmbeddedType `read_col:"my_type.baz" write_col:"baz,json"`
 	// LastTime is a readable, sortable and writable pointer column
 	LastTime *time.Time `read_col:"my_type.last_time,sortable" write_col:"last_time"`
+	// LastUpdate is a readable, sortable and writable non-pointer time.Time column that is also named differently
+	LastUpdate time.Time `read_col:"my_type.updated_at,sortable" write_col:"updated_at"`
+	// Donuts is a readable and writable slice of non-pointer Donut structs
+	Donuts []Donut `read_col:"my_type.donuts" write_col:"donuts,json"`
 }
 
 // MyEmbeddedType will be embedded in MyType
 type MyEmbeddedType struct {
 	Fizz bool
 	Buzz bool
+}
+
+type Donut struct {
+	Flavor string
+	Size   int
 }
