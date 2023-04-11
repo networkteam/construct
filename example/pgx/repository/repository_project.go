@@ -13,24 +13,23 @@ import (
 	"github.com/networkteam/construct/v2/example/pgx/model"
 )
 
+type ProjectQueryOpts struct {
+	IncludeTodoCount bool
+}
+
 // projectBuildFindQuery creates a partial builder.SelectBuilder that
 // - selects a single JSON result by using buildProjectJson
 // - from the projects table
 // - and left joins an aggregation of todo counts by project
-func projectBuildFindQuery() builder.SelectBuilder {
-	return SelectJson(projectJson()).
+func projectBuildFindQuery(opts ProjectQueryOpts) builder.SelectBuilder {
+	return SelectJson(projectJson(opts)).
 		From(project).
-		LeftJoin(
-			Select(fn.Count(todo.ProjectID)).As("count").
-				Select(todo.ProjectID).
-				From(todo).
-				GroupBy(todo.ProjectID),
-		).As("todo_counts").On(project.ID.Eq(N("todo_counts.project_id")))
+		SelectBuilder
 }
 
 // FindProjectByID finds a single project by id
-func FindProjectByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID) (result model.Project, err error) {
-	q := projectBuildFindQuery().
+func FindProjectByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID, opts ProjectQueryOpts) (result model.Project, err error) {
+	q := projectBuildFindQuery(opts).
 		Where(project.ID.Eq(Arg(id)))
 
 	row, err := qrbpgx.Build(q).WithExecutor(executor).QueryRow(ctx)
@@ -41,8 +40,8 @@ func FindProjectByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID
 }
 
 // FindAllProjects finds all projects sorted by title
-func FindAllProjects(ctx context.Context, executor qrbpgx.Executor) (result []model.Project, err error) {
-	q := projectBuildFindQuery().
+func FindAllProjects(ctx context.Context, executor qrbpgx.Executor, opts ProjectQueryOpts) (result []model.Project, err error) {
+	q := projectBuildFindQuery(opts).
 		OrderBy(project.Title)
 
 	rows, err := qrbpgx.Build(q).WithExecutor(executor).Query(ctx)
@@ -62,9 +61,15 @@ func InsertProject(ctx context.Context, executor qrbpgx.Executor, changeSet Proj
 	return err
 }
 
-func projectJson() builder.JsonBuildObjectBuilder {
-	// Use the generated default select (JSON object builder) and add another property for the aggregated count
+func projectJson(opts ProjectQueryOpts) builder.JsonBuildObjectBuilder {
+	// Use the generated default select (JSON object builder) and add another property for the aggregated count#
+	// (if opts.IncludeTodoCount is true).
 	return projectDefaultJson.
-		// Wrap with COALESCE for null values because of LEFT JOIN (if no todos are present for a project)
-		Prop("TodoCount", Coalesce(N("todo_counts.count"), Int(0)))
+		PropIf(
+			opts.IncludeTodoCount,
+			"TodoCount",
+			Select(fn.Count(N("*"))).
+				From(todo).
+				Where(todo.ProjectID.Eq(project.ID)),
+		)
 }

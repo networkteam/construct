@@ -51,8 +51,12 @@ func main() {
 				Name: "project",
 				Subcommands: []*cli.Command{
 					{
-						Name: "add",
+						Name:      "add",
+						ArgsUsage: "[title]",
 						Action: func(c *cli.Context) error {
+							if c.NArg() != 1 {
+								return fmt.Errorf("expected exactly 1 argument: [title]")
+							}
 							project := model.Project{
 								ID:    uuid.Must(uuid.NewV4()),
 								Title: c.Args().Get(0),
@@ -68,7 +72,9 @@ func main() {
 					{
 						Name: "list",
 						Action: func(c *cli.Context) error {
-							projects, err := repository.FindAllProjects(c.Context, conn)
+							projects, err := repository.FindAllProjects(c.Context, conn, repository.ProjectQueryOpts{
+								IncludeTodoCount: true,
+							})
 							if err != nil {
 								return fmt.Errorf("finding all projects: %w", err)
 							}
@@ -80,7 +86,7 @@ func main() {
 								table.Append([]string{
 									project.ID.String(),
 									project.Title,
-									strconv.Itoa(project.TodoCount),
+									strconv.Itoa(*project.TodoCount),
 								})
 							}
 
@@ -101,7 +107,9 @@ func main() {
 								return fmt.Errorf("parsing id: %w", err)
 							}
 
-							project, err := repository.FindProjectByID(c.Context, conn, id)
+							project, err := repository.FindProjectByID(c.Context, conn, id, repository.ProjectQueryOpts{
+								IncludeTodoCount: true,
+							})
 							if err != nil {
 								return fmt.Errorf("finding project: %w", err)
 							}
@@ -112,7 +120,7 @@ func main() {
 							table.Append([]string{
 								project.ID.String(),
 								project.Title,
-								strconv.Itoa(project.TodoCount),
+								strconv.Itoa(*project.TodoCount),
 							})
 
 							table.Render()
@@ -130,7 +138,7 @@ func main() {
 						ArgsUsage: "[project id] [title]",
 						Action: func(c *cli.Context) error {
 							if c.NArg() != 2 {
-								return fmt.Errorf("expected exactly 2 arguments")
+								return fmt.Errorf("expected exactly 2 arguments: [project id] [title]")
 							}
 							projectID, err := uuid.FromString(c.Args().Get(0))
 							if err != nil {
@@ -156,20 +164,22 @@ func main() {
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:  "project-id",
-								Usage: "Show todos for the given project",
+								Usage: "Filter todos by the given project (optional)",
 							},
 						},
 						Action: func(c *cli.Context) error {
 							var filter model.TodosFilter
 							if projectIDStr := c.String("project-id"); projectIDStr != "" {
-								projectID, err := uuid.FromString(c.Args().Get(0))
+								projectID, err := uuid.FromString(projectIDStr)
 								if err != nil {
 									return fmt.Errorf("parsing project id: %w", err)
 								}
 								filter.ProjectID = &projectID
 							}
 
-							todos, err := repository.FindAllTodos(c.Context, conn, filter)
+							todos, err := repository.FindAllTodos(c.Context, conn, filter, repository.TodoQueryOpts{
+								IncludeProject: true,
+							})
 							if err != nil {
 								return fmt.Errorf("finding all todos: %w", err)
 							}
@@ -201,7 +211,7 @@ func main() {
 						ArgsUsage: "[todo id]",
 						Action: func(c *cli.Context) error {
 							if c.NArg() != 1 {
-								return fmt.Errorf("expected exactly 1 argument")
+								return fmt.Errorf("expected exactly 1 argument: [todo id]")
 							}
 							todoID, err := uuid.FromString(c.Args().Get(0))
 							if err != nil {

@@ -12,20 +12,27 @@ import (
 	"github.com/networkteam/construct/v2/example/pgx/model"
 )
 
+type TodoQueryOpts struct {
+	IncludeProject bool
+	ProjectOpts    ProjectQueryOpts
+}
+
 // todoBuildFindQuery creates a partial builder.SelectBuilder that
 // - selects a single JSON result by using todoJson()
 // - from the todos table
 // - and left join the projects for eagerly fetching the project for each todo in a single query
-func todoBuildFindQuery() builder.SelectBuilder {
+func todoBuildFindQuery(opts TodoQueryOpts) builder.SelectBuilder {
 	return qrb.
-		SelectJson(todoJson()).
+		SelectJson(todoJson(opts)).
 		From(todo).
-		LeftJoin(project).On(todo.ProjectID.Eq(project.ID))
+		ApplyIf(opts.IncludeProject, func(q builder.SelectBuilder) builder.SelectBuilder {
+			return q.LeftJoin(project).On(todo.ProjectID.Eq(project.ID))
+		})
 }
 
 // FindTodoByID finds a single todo by id
-func FindTodoByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID) (result model.Todo, err error) {
-	q := todoBuildFindQuery().
+func FindTodoByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID, opts TodoQueryOpts) (result model.Todo, err error) {
+	q := todoBuildFindQuery(opts).
 		Where(todo.ID.Eq(qrb.Arg(id)))
 
 	row, err := qrbpgx.Build(q).WithExecutor(executor).QueryRow(ctx)
@@ -36,8 +43,8 @@ func FindTodoByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID) (
 }
 
 // FindAllTodos finds all todos sorted by title
-func FindAllTodos(ctx context.Context, executor qrbpgx.Executor, filter model.TodosFilter) (result []model.Todo, err error) {
-	q := todoBuildFindQuery().
+func FindAllTodos(ctx context.Context, executor qrbpgx.Executor, filter model.TodosFilter, opts TodoQueryOpts) (result []model.Todo, err error) {
+	q := todoBuildFindQuery(opts).
 		OrderBy(todo.CompletedAt).Desc().NullsFirst().
 		SelectBuilder
 
@@ -78,9 +85,9 @@ func UpdateTodo(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID, cha
 	return assertRowsAffected(res, "update", 1)
 }
 
-func todoJson() builder.JsonBuildObjectBuilder {
+func todoJson(opts TodoQueryOpts) builder.JsonBuildObjectBuilder {
 	// Use the generated default select (JSON object builder) and add another property for the aggregated count
 	return todoDefaultJson.
 		// This is why it's so nice to select JSON: adding a nested select of all the joined project properties is easy
-		Prop("Project", projectDefaultJson)
+		PropIf(opts.IncludeProject, "Project", projectJson(opts.ProjectOpts))
 }
