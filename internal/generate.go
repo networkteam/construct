@@ -34,7 +34,7 @@ func Generate(m *StructMapping, goPackage string, goFile string, w io.Writer) (o
 
 	for _, fm := range m.FieldMappings {
 		if fm.WriteColDef != nil {
-			fieldName := firstToUpper(fm.Name)
+			fieldName := fm.Name
 
 			var prepareStmt *Statement
 			if fm.WriteColDef.ToJSON {
@@ -124,7 +124,7 @@ func generateSchemaVar(f *File, m *StructMapping) {
 			if fm.ReadColDef == nil {
 				continue
 			}
-			g.Id(firstToLower(fm.Name)).Qual("github.com/networkteam/qrb/builder", "IdentExp")
+			g.Id(fm.Name).Qual("github.com/networkteam/qrb/builder", "IdentExp")
 		}
 	}).Values(DictFunc(func(d Dict) {
 		if m.TableName != "" {
@@ -132,14 +132,14 @@ func generateSchemaVar(f *File, m *StructMapping) {
 		}
 		for _, fm := range m.FieldMappings {
 			if fm.ReadColDef != nil {
-				d[Id(firstToLower(fm.Name))] = Qual("github.com/networkteam/qrb", "N").Call(Lit(fm.ReadColDef.Col))
+				d[Id(fm.Name)] = Qual("github.com/networkteam/qrb", "N").Call(Lit(fm.ReadColDef.Col))
 			}
 		}
 	})).Line()
 }
 
 func readColVarName(m *StructMapping, fm FieldMapping) string {
-	return firstToLower(m.MappingTypeName) + "." + firstToLower(fm.Name)
+	return firstToLower(m.MappingTypeName) + "." + fm.Name
 }
 
 func generateDefaultSelectJsonObject(f *File, m *StructMapping) {

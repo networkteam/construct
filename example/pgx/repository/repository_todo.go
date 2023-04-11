@@ -20,13 +20,13 @@ func todoBuildFindQuery() builder.SelectBuilder {
 	return qrb.
 		SelectJson(todoJson()).
 		From(todo).
-		LeftJoin(project).On(todo.projectID.Eq(project.id))
+		LeftJoin(project).On(todo.ProjectID.Eq(project.ID))
 }
 
 // FindTodoByID finds a single todo by id
 func FindTodoByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID) (result model.Todo, err error) {
 	q := todoBuildFindQuery().
-		Where(todo.id.Eq(qrb.Arg(id)))
+		Where(todo.ID.Eq(qrb.Arg(id)))
 
 	row, err := qrbpgx.Build(q).WithExecutor(executor).QueryRow(ctx)
 	if err != nil {
@@ -38,7 +38,12 @@ func FindTodoByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID) (
 // FindAllTodos finds all todos sorted by title
 func FindAllTodos(ctx context.Context, executor qrbpgx.Executor, filter model.TodosFilter) (result []model.Todo, err error) {
 	q := todoBuildFindQuery().
-		OrderBy(todo.completedAt).Desc().NullsFirst()
+		OrderBy(todo.CompletedAt).Desc().NullsFirst().
+		SelectBuilder
+
+	if filter.ProjectID != nil {
+		q = q.Where(todo.ProjectID.Eq(qrb.Arg(filter.ProjectID)))
+	}
 
 	rows, err := qrbpgx.Build(q).WithExecutor(executor).Query(ctx)
 	if err != nil {
@@ -63,7 +68,7 @@ func UpdateTodo(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID, cha
 	q := qrb.
 		Update(todo).
 		SetMap(changeSet.toMap()).
-		Where(todo.id.Eq(qrb.Arg(id)))
+		Where(todo.ID.Eq(qrb.Arg(id)))
 
 	res, err := qrbpgx.Build(q).WithExecutor(executor).Exec(ctx)
 	if err != nil {

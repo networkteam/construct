@@ -12,16 +12,16 @@ import (
 
 var todo = struct {
 	builder.Identer
-	id          builder.IdentExp
-	projectID   builder.IdentExp
-	title       builder.IdentExp
-	completedAt builder.IdentExp
+	ID          builder.IdentExp
+	ProjectID   builder.IdentExp
+	Title       builder.IdentExp
+	CompletedAt builder.IdentExp
 }{
+	CompletedAt: qrb.N("todos.completed_at"),
+	ID:          qrb.N("todos.id"),
 	Identer:     qrb.N("todos"),
-	completedAt: qrb.N("todos.completed_at"),
-	id:          qrb.N("todos.id"),
-	projectID:   qrb.N("todos.project_id"),
-	title:       qrb.N("todos.title"),
+	ProjectID:   qrb.N("todos.project_id"),
+	Title:       qrb.N("todos.title"),
 }
 
 var todoSortFields = map[string]builder.IdentExp{}
@@ -63,7 +63,7 @@ func TodoToChangeSet(r model.Todo) (c TodoChangeSet) {
 }
 
 var todoDefaultJson = fn.JsonBuildObject().
-	Prop("ID", todo.id).
-	Prop("ProjectID", todo.projectID).
-	Prop("Title", todo.title).
-	Prop("CompletedAt", todo.completedAt)
+	Prop("ID", todo.ID).
+	Prop("ProjectID", todo.ProjectID).
+	Prop("Title", todo.Title).
+	Prop("CompletedAt", todo.CompletedAt)

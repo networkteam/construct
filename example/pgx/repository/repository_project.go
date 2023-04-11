@@ -21,17 +21,17 @@ func projectBuildFindQuery() builder.SelectBuilder {
 	return SelectJson(projectJson()).
 		From(project).
 		LeftJoin(
-			Select(fn.Count(todo.projectID)).As("count").
-				Select(todo.projectID).
+			Select(fn.Count(todo.ProjectID)).As("count").
+				Select(todo.ProjectID).
 				From(todo).
-				GroupBy(todo.projectID),
-		).As("todo_counts").On(project.id.Eq(N("todo_counts.project_id")))
+				GroupBy(todo.ProjectID),
+		).As("todo_counts").On(project.ID.Eq(N("todo_counts.project_id")))
 }
 
 // FindProjectByID finds a single project by id
 func FindProjectByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID) (result model.Project, err error) {
 	q := projectBuildFindQuery().
-		Where(project.id.Eq(Arg(id)))
+		Where(project.ID.Eq(Arg(id)))
 
 	row, err := qrbpgx.Build(q).WithExecutor(executor).QueryRow(ctx)
 	if err != nil {
@@ -43,7 +43,7 @@ func FindProjectByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID
 // FindAllProjects finds all projects sorted by title
 func FindAllProjects(ctx context.Context, executor qrbpgx.Executor) (result []model.Project, err error) {
 	q := projectBuildFindQuery().
-		OrderBy(project.title)
+		OrderBy(project.Title)
 
 	rows, err := qrbpgx.Build(q).WithExecutor(executor).Query(ctx)
 	if err != nil {

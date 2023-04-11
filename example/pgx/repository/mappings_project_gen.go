@@ -11,12 +11,12 @@ import (
 
 var project = struct {
 	builder.Identer
-	id    builder.IdentExp
-	title builder.IdentExp
+	ID    builder.IdentExp
+	Title builder.IdentExp
 }{
+	ID:      qrb.N("projects.id"),
 	Identer: qrb.N("projects"),
-	id:      qrb.N("projects.id"),
-	title:   qrb.N("projects.title"),
+	Title:   qrb.N("projects.title"),
 }
 
 var projectSortFields = map[string]builder.IdentExp{}
@@ -46,5 +46,5 @@ func ProjectToChangeSet(r model.Project) (c ProjectChangeSet) {
 }
 
 var projectDefaultJson = fn.JsonBuildObject().
-	Prop("ID", project.id).
-	Prop("Title", project.title)
+	Prop("ID", project.ID).
+	Prop("Title", project.Title)
