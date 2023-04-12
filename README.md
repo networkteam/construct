@@ -10,9 +10,37 @@
 Got tired of too many abstractions over all the features PostgreSQL provides when using an ORM? But rolling your own persistence code is tedious and there's too much boilderplate?
 This is a code generator to generate a bunch of structs and functions to implement persistence code with a few line and keep all the power PostgreSQL provides.
 
-## Example
+### Core ideas
 
-**Your custom type defines fields for reading and writing**
+* Selecting JSON from the database allows for nested data and does most of the work that an ORM does on the read side. It can be used to flexibly load related data in an eager way (see [example](./example/pgx/repository/repository_project.go)).
+* Querying the database without too much abstraction gives a lot of flexibility - where needed.
+* Not using the model itself for writes reduces a lot of complexity around dirty checking and other ORM features.
+  It works well in an [CQRS](https://martinfowler.com/bliki/CQRS.html) architecture where commands and queries are separated.
+* Database migrations often need more thought and are outside the scope of this tool. 
+  You can use [github.com/pressly/goose](https://github.com/pressly/goose/) or other solutions to manage your schema and migrations.
+
+## Install
+
+Add the construct module to your project:
+
+```bash
+go get github.com/networkteam/construct/v2
+```
+
+It is a good idea to have a top-level `tools.go` file to import construct, so it will be kept in the go.mod file:
+
+```go
+// +build tools
+package myproject
+
+import (
+    _ "github.com/networkteam/construct/v2"
+)
+```
+
+## How does it work?
+
+### Your types declare database fields for reading and writing via struct tags
 
 *model/customer.go*
 
@@ -26,14 +54,14 @@ type Customer struct {
 	ID   uuid.UUID `table_name:"customers" read_col:"customers.customer_id" write_col:"customer_id"` // The table_name tag is optional and can be specified at most once per struct
 	Name string    `read_col:"customers.name,sortable" write_col:"name"`
 	// Fields can be serialized as JSON by adding a "json" option to the "write_col" tag.
-	// It works perfectly with a column of type jsonb or json in PostgreSQL.
+	// It works perfectly with a column of type jsonb in PostgreSQL.
 	ContactPerson Contact `read_col:"customers.contact_person,sortable" write_col:"contact_person,json"`
-
-	// ProjectCount is not mapped to the table but used in the select for reading an aggregate count
-	ProjectCount int
 
 	CreatedAt time.Time `read_col:"customers.created_at,sortable" write_col:"created_at"`
 	UpdatedAt time.Time `read_col:"customers.updated_at,sortable"`
+
+	// ProjectCount is not mapped to the table but used in the select for reading an aggregate count
+	ProjectCount int
 }
 
 // Contact is an embedded type and doesn't need any tags
@@ -44,9 +72,9 @@ type Contact struct {
 }
 ```
 
-**Construct generates structs and functions that help to read and insert / update data**
+### Construct generates structs and functions that help to query JSON and insert / update data
 
-Generate code in your persistence package:
+Create a file that includes a `go:generate` directive to run construct for all types in your `model` package:
 
 *repository/mappings.go*
 ```go
@@ -55,11 +83,27 @@ package repository
 //go:generate go run github.com/networkteam/construct/v2/cmd/construct my/project/model
 ```
 
+Run the generator:
+
 ```bash
 go generate ./repository
 ```
 
-**Roll your own persistence code for full control and low abstraction**
+### What is generated?
+
+* A default `JsonBuildObject` expression (e.g. `customerDefaultJson`) for selecting all read fields of the model via JSON.
+  This is supposed to be enhanced with additional properties in the repository code.
+* A changeset struct (e.g. `CustomerChangeSet`) for each model that can be used to pass partial data to insert and update functions in a type-safe way.
+* A schema variable `customer` for the table (if `table_name` is set) and each field for referencing tables and columns in queries via the query builder.
+* A map of sortable fields, e.g. `customerSortFields` that can be used to implement flexible sorting.
+
+This generated code helps to keep the repository code clean and type-safe.
+When adding a field to a model, there is no need to add it in several places in the repository code, it is just added to the model struct and construct will generate the rest
+(if your data is selected via JSON).
+
+With [qrb](https://github.com/networkteam/qrb) as the query builder, selecting nested JSON data is easy and does most of the work that is traditionally done via an ORM on the read side.
+
+### Roll your own persistence code for full control and low abstraction
 
 Structure your persistence code as it fits the project. A very simple and working approach is to have a bunch of
 functions that operator on the target type for finding, inserting, updating and deleting. Add more complex queries
@@ -176,25 +220,6 @@ func assertRowsAffected(res pgconn.CommandTag, op string, numberOfRows int64) er
 	}
 	return nil
 }
-```
-
-## Install
-
-Add Go module:
-
-```bash
-go get github.com/networkteam/construct/v2
-```
-
-Add module to a `tools.go` file:
-
-```go
-// +build tools
-package myproject
-
-import (
-    _ "github.com/networkteam/construct/v2"
-)
 ```
 
 ## License
