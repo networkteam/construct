@@ -12,7 +12,7 @@ import (
 
 // Generate Go code for the struct mapping
 func Generate(m *StructMapping, goPackage string, goFile string, w io.Writer) (outputFilename string, err error) {
-	isIdenticalPackage := goPackage == m.MappingTypePackage
+	pkgName := m.MappingTypePackage[strings.LastIndex(m.MappingTypePackage, "/")+1:]
 
 	f := NewFile(goPackage)
 
@@ -24,7 +24,7 @@ func Generate(m *StructMapping, goPackage string, goFile string, w io.Writer) (o
 
 	// ChangeSet struct
 
-	changeSetName, err := generateChangeSetStruct(f, m)
+	changeSetName, err := generateChangeSetStruct(f, m, goPackage)
 	if err != nil {
 		return "", fmt.Errorf("generating ChangeSet struct: %w", err)
 	}
@@ -102,12 +102,12 @@ func Generate(m *StructMapping, goPackage string, goFile string, w io.Writer) (o
 
 	toChangeSetBlock = append(toChangeSetBlock, Return())
 
-	var pck string
-	if !isIdenticalPackage {
-		pck = m.MappingTypePackage
+	mtp := m.MappingTypePackage
+	if goPackage == pkgName {
+		mtp = ""
 	}
 	f.Func().Id(firstToUpper(m.TargetName) + "ToChangeSet").Params(
-		Id("r").Qual(pck, m.MappingTypeName),
+		Id("r").Qual(mtp, m.MappingTypeName),
 	).Params(Id("c").Id(changeSetName)).Block(
 		toChangeSetBlock...,
 	).Line()
@@ -169,7 +169,7 @@ func generateDefaultSelectJsonObject(f *File, m *StructMapping) {
 	f.Var().Id(varName).Op("=").Add(code).Line()
 }
 
-func generateChangeSetStruct(f *File, m *StructMapping) (changeSetName string, err error) {
+func generateChangeSetStruct(f *File, m *StructMapping, pkgDest string) (changeSetName string, err error) {
 	var structFields []Code
 
 	for _, fm := range m.FieldMappings {
@@ -180,8 +180,13 @@ func generateChangeSetStruct(f *File, m *StructMapping) (changeSetName string, e
 				code.Op("*").Id(v.String())
 			case *types.Named:
 				typeName := v.Obj()
+				pkgPath := typeName.Pkg().Path()
+				pkgName := pkgPath[strings.LastIndex(pkgPath, "/")+1:]
+				if pkgDest == pkgName {
+					pkgPath = ""
+				}
 				code.Op("*").Qual(
-					typeName.Pkg().Path(),
+					pkgPath,
 					typeName.Name(),
 				)
 			case *types.Pointer:
@@ -192,8 +197,13 @@ func generateChangeSetStruct(f *File, m *StructMapping) (changeSetName string, e
 					code.Op("*").Id(v.String())
 				case *types.Named:
 					typeName := v.Obj()
+					pkgPath := typeName.Pkg().Path()
+					pkgName := pkgPath[strings.LastIndex(pkgPath, "/")+1:]
+					if pkgDest == pkgName {
+						pkgPath = ""
+					}
 					code.Op("*").Qual(
-						typeName.Pkg().Path(),
+						pkgPath,
 						typeName.Name(),
 					)
 				case *types.Slice:
@@ -209,8 +219,13 @@ func generateChangeSetStruct(f *File, m *StructMapping) (changeSetName string, e
 					code.Id(v.String())
 				case *types.Named:
 					typeName := v.Obj()
+					pkgPath := typeName.Pkg().Path()
+					pkgName := pkgPath[strings.LastIndex(pkgPath, "/")+1:]
+					if pkgDest == pkgName {
+						pkgPath = ""
+					}
 					code.Qual(
-						typeName.Pkg().Path(),
+						pkgPath,
 						typeName.Name(),
 					)
 				default:
