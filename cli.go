@@ -72,21 +72,23 @@ func NewCliApp() *cli.App {
 				if err := os.WriteFile(outputFilename, buf.Bytes(), 0644); err != nil {
 					return fmt.Errorf("writing output file: %w", err)
 				}
-			} else {
-				mappings, err := internal.DiscoverStructMappings(mappingTypePackage)
-				if err != nil {
-					return fmt.Errorf("discovering struct mappings: %w", err)
-				}
 
-				for _, m := range mappings {
-					var buf bytes.Buffer
-					outputFilename, err := internal.Generate(m, goPackage, goFile, &buf)
-					if err != nil {
-						return fmt.Errorf("generating code: %w", err)
-					}
-					if err := os.WriteFile(outputFilename, buf.Bytes(), 0644); err != nil {
-						return fmt.Errorf("writing output file: %w", err)
-					}
+				return nil
+			}
+
+			mappings, err := internal.DiscoverStructMappings(mappingTypePackage)
+			if err != nil {
+				return fmt.Errorf("discovering struct mappings: %w", err)
+			}
+
+			for _, m := range mappings {
+				var buf bytes.Buffer
+				outputFilename, err := internal.Generate(m, goPackage, goFile, &buf)
+				if err != nil {
+					return fmt.Errorf("generating code: %w", err)
+				}
+				if err := os.WriteFile(outputFilename, buf.Bytes(), 0644); err != nil {
+					return fmt.Errorf("writing output file: %w", err)
 				}
 			}
 
