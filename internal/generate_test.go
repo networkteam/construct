@@ -37,7 +37,7 @@ func TestGenerateSamePackage(t *testing.T) {
 	const expectedOutputFilename = "fixture_mytype_gen.go"
 	require.Equal(t, expectedOutputFilename, outputFilename, "expected output filename to be %s, but got %s", expectedOutputFilename, outputFilename)
 
-	fixtureOut, err := os.ReadFile("./fixtures/other/" + expectedOutputFilename)
+	fixtureOut, err := os.ReadFile("./fixtures/" + expectedOutputFilename)
 	require.NoError(t, err, "error reading fixture file: %v")
 
 	assert.Equal(t, string(fixtureOut), buf.String())
