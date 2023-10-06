@@ -6,10 +6,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/networkteam/qrb"
 	"github.com/networkteam/qrb/builder"
-	"github.com/networkteam/qrb/qrbpgx"
+	"github.com/networkteam/qrb/qrbsql"
 
-	"github.com/networkteam/construct/v2/constructpgx"
-	"github.com/networkteam/construct/v2/example/pgx/model"
+	"github.com/networkteam/construct/v2/constructsql"
+	"github.com/networkteam/construct/v2/example/sql/model"
 )
 
 type TodoQueryOpts struct {
@@ -31,17 +31,17 @@ func todoBuildFindQuery(opts TodoQueryOpts) builder.SelectBuilder {
 }
 
 // FindTodoByID finds a single todo by id
-func FindTodoByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID, opts TodoQueryOpts) (result model.Todo, err error) {
+func FindTodoByID(ctx context.Context, executor qrbsql.Executor, id uuid.UUID, opts TodoQueryOpts) (result model.Todo, err error) {
 	q := todoBuildFindQuery(opts).
 		Where(todo.ID.Eq(qrb.Arg(id)))
 
-	return constructpgx.ScanRow[model.Todo](
-		qrbpgx.Build(q).WithExecutor(executor).QueryRow(ctx),
+	return constructsql.ScanRow[model.Todo](
+		qrbsql.Build(q).WithExecutor(executor).QueryRow(ctx),
 	)
 }
 
 // FindAllTodos finds all todos sorted by title
-func FindAllTodos(ctx context.Context, executor qrbpgx.Executor, filter model.TodosFilter, opts TodoQueryOpts) (result []model.Todo, err error) {
+func FindAllTodos(ctx context.Context, executor qrbsql.Executor, filter model.TodosFilter, opts TodoQueryOpts) (result []model.Todo, err error) {
 	q := todoBuildFindQuery(opts).
 		OrderBy(todo.CompletedAt).Desc().NullsFirst().
 		SelectBuilder
@@ -50,34 +50,34 @@ func FindAllTodos(ctx context.Context, executor qrbpgx.Executor, filter model.To
 		q = q.Where(todo.ProjectID.Eq(qrb.Arg(filter.ProjectID)))
 	}
 
-	return constructpgx.CollectRows[model.Todo](
-		qrbpgx.Build(q).WithExecutor(executor).Query(ctx),
+	return constructsql.CollectRows[model.Todo](
+		qrbsql.Build(q).WithExecutor(executor).Query(ctx),
 	)
 }
 
 // InsertTodo inserts a new todo with values from changeSet
-func InsertTodo(ctx context.Context, executor qrbpgx.Executor, changeSet TodoChangeSet) error {
+func InsertTodo(ctx context.Context, executor qrbsql.Executor, changeSet TodoChangeSet) error {
 	q := qrb.
 		InsertInto(todo).
 		SetMap(changeSet.toMap())
 
-	_, err := qrbpgx.Build(q).WithExecutor(executor).Exec(ctx)
+	_, err := qrbsql.Build(q).WithExecutor(executor).Exec(ctx)
 	return err
 }
 
 // UpdateTodo updates a todo with the given id and changes from changeSet
-func UpdateTodo(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID, changeSet TodoChangeSet) error {
+func UpdateTodo(ctx context.Context, executor qrbsql.Executor, id uuid.UUID, changeSet TodoChangeSet) error {
 	q := qrb.
 		Update(todo).
 		SetMap(changeSet.toMap()).
 		Where(todo.ID.Eq(qrb.Arg(id)))
 
-	res, err := qrbpgx.Build(q).WithExecutor(executor).Exec(ctx)
+	res, err := qrbsql.Build(q).WithExecutor(executor).Exec(ctx)
 	if err != nil {
 		return err
 	}
 
-	return constructpgx.AssertRowsAffected(res, "update", 1)
+	return constructsql.AssertRowsAffected(res, "update", 1)
 }
 
 func todoJson(opts TodoQueryOpts) builder.JsonBuildObjectBuilder {

@@ -7,10 +7,10 @@ import (
 	. "github.com/networkteam/qrb"
 	"github.com/networkteam/qrb/builder"
 	"github.com/networkteam/qrb/fn"
-	"github.com/networkteam/qrb/qrbpgx"
+	"github.com/networkteam/qrb/qrbsql"
 
-	"github.com/networkteam/construct/v2/constructpgx"
-	"github.com/networkteam/construct/v2/example/pgx/model"
+	"github.com/networkteam/construct/v2/constructsql"
+	"github.com/networkteam/construct/v2/example/sql/model"
 )
 
 type ProjectQueryOpts struct {
@@ -27,31 +27,31 @@ func projectBuildFindQuery(opts ProjectQueryOpts) builder.SelectBuilder {
 }
 
 // FindProjectByID finds a single project by id
-func FindProjectByID(ctx context.Context, executor qrbpgx.Executor, id uuid.UUID, opts ProjectQueryOpts) (result model.Project, err error) {
+func FindProjectByID(ctx context.Context, executor qrbsql.Executor, id uuid.UUID, opts ProjectQueryOpts) (result model.Project, err error) {
 	q := projectBuildFindQuery(opts).
 		Where(project.ID.Eq(Arg(id)))
 
-	return constructpgx.ScanRow[model.Project](
-		qrbpgx.Build(q).WithExecutor(executor).QueryRow(ctx),
+	return constructsql.ScanRow[model.Project](
+		qrbsql.Build(q).WithExecutor(executor).QueryRow(ctx),
 	)
 }
 
 // FindAllProjects finds all projects sorted by title
-func FindAllProjects(ctx context.Context, executor qrbpgx.Executor, opts ProjectQueryOpts) (result []model.Project, err error) {
+func FindAllProjects(ctx context.Context, executor qrbsql.Executor, opts ProjectQueryOpts) (result []model.Project, err error) {
 	q := projectBuildFindQuery(opts).
 		OrderBy(project.Title)
 
-	return constructpgx.CollectRows[model.Project](
-		qrbpgx.Build(q).WithExecutor(executor).Query(ctx),
+	return constructsql.CollectRows[model.Project](
+		qrbsql.Build(q).WithExecutor(executor).Query(ctx),
 	)
 }
 
 // InsertProject inserts a new project from a ProjectChangeSet
-func InsertProject(ctx context.Context, executor qrbpgx.Executor, changeSet ProjectChangeSet) error {
+func InsertProject(ctx context.Context, executor qrbsql.Executor, changeSet ProjectChangeSet) error {
 	q := InsertInto(project).
 		SetMap(changeSet.toMap())
 
-	_, err := qrbpgx.Build(q).WithExecutor(executor).Exec(ctx)
+	_, err := qrbsql.Build(q).WithExecutor(executor).Exec(ctx)
 	return err
 }
 
