@@ -61,13 +61,14 @@ func scanRow[T any](row pgx.Row) (T, error) {
 	return result, nil
 }
 
-// AssertRowsAffected checks if the given result affected exactly the expected number of rows.
-func AssertRowsAffected(result pgconn.CommandTag, operation string, expectedRows int) error {
-	actualRows := result.RowsAffected()
-	if actualRows != int64(expectedRows) {
-		return fmt.Errorf("%s affected %d rows, but expected exactly %d", operation, actualRows, expectedRows)
+// AssertRowsAffected returns a func that checks if the given operation result affected exactly the expected number of rows.
+func AssertRowsAffected(operation string, expectedRows int) func(pgconn.CommandTag) error {
+	return func(result pgconn.CommandTag) error {
+		actualRows := result.RowsAffected()
+		if actualRows != int64(expectedRows) {
+			return fmt.Errorf("%s affected %d rows, but expected exactly %d", operation, actualRows, expectedRows)
+		}
+
+		return nil
 	}
-
-	return nil
-
 }

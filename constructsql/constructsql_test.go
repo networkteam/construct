@@ -100,18 +100,22 @@ func (r sqlResult) RowsAffected() (int64, error) {
 
 func TestAssertRowsAffected(t *testing.T) {
 	t.Run("returns nil if rows affected matches expected", func(t *testing.T) {
-
-		err := constructsql.AssertRowsAffected(sqlResult{affectedRows: 2}, "update", 2)
+		err := constructsql.AssertRowsAffected("update", 2)(sqlResult{affectedRows: 2}, nil)
 		require.NoError(t, err)
 	})
 
 	t.Run("returns error if rows affected does not match expected", func(t *testing.T) {
-		err := constructsql.AssertRowsAffected(sqlResult{affectedRows: 2}, "update", 1)
+		err := constructsql.AssertRowsAffected("update", 1)(sqlResult{affectedRows: 2}, nil)
 		require.Error(t, err)
 	})
 
 	t.Run("returns error if rows affected returns error", func(t *testing.T) {
-		err := constructsql.AssertRowsAffected(sqlResult{affectedRowsErr: errors.New("some error")}, "update", 1)
+		err := constructsql.AssertRowsAffected("update", 1)(sqlResult{affectedRowsErr: errors.New("some error")}, nil)
+		require.Error(t, err)
+	})
+
+	t.Run("returns previous error", func(t *testing.T) {
+		err := constructsql.AssertRowsAffected("update", 1)(sqlResult{}, errors.New("some error"))
 		require.Error(t, err)
 	})
 }

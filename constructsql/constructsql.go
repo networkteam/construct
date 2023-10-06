@@ -71,16 +71,20 @@ func scanRow[T any](row RowScanner) (result T, err error) {
 }
 
 // AssertRowsAffected checks if the given result affected exactly the expected number of rows.
-func AssertRowsAffected(result sql.Result, operation string, expectedRows int) error {
-	actualRows, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("getting affected rows: %w", err)
+func AssertRowsAffected(operation string, expectedRows int) func(sql.Result, error) error {
+	return func(result sql.Result, err error) error {
+		if err != nil {
+			return err
+		}
+		actualRows, err := result.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("getting affected rows: %w", err)
+		}
+
+		if actualRows != int64(expectedRows) {
+			return fmt.Errorf("%s affected %d rows, but expected exactly %d", operation, actualRows, expectedRows)
+		}
+
+		return nil
 	}
-
-	if actualRows != int64(expectedRows) {
-		return fmt.Errorf("%s affected %d rows, but expected exactly %d", operation, actualRows, expectedRows)
-	}
-
-	return nil
-
 }

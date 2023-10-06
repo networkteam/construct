@@ -88,12 +88,12 @@ func TestScanRow(t *testing.T) {
 
 func TestAssertRowsAffected(t *testing.T) {
 	t.Run("returns nil if rows affected matches expected", func(t *testing.T) {
-		err := constructpgx.AssertRowsAffected(pgconn.NewCommandTag("UPDATE 2"), "update", 2)
+		err := constructpgx.AssertRowsAffected("update", 2)(pgconn.NewCommandTag("UPDATE 2"))
 		require.NoError(t, err)
 	})
 
 	t.Run("returns error if rows affected does not match expected", func(t *testing.T) {
-		err := constructpgx.AssertRowsAffected(pgconn.NewCommandTag("UPDATE 2"), "update", 1)
+		err := constructpgx.AssertRowsAffected("update", 1)(pgconn.NewCommandTag("UPDATE 2"))
 		require.Error(t, err)
 	})
 }
