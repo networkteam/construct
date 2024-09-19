@@ -95,6 +95,80 @@ func (m *mockRows) Conn() *pgx.Conn {
 
 var _ pgx.Rows = &mockRows{}
 
+func TestCollectRows(t *testing.T) {
+	t.Run("collect rows without error", func(t *testing.T) {
+		rows := mockRows{
+			rows: []mockRow{
+				{
+					scanUser: &user{ID: 1, Name: "test"},
+				},
+			},
+		}
+		records, err := constructpgx.CollectRows[user](&rows, nil)
+		require.NoError(t, err)
+
+		assert.Equal(t, []user{{ID: 1, Name: "test"}}, records)
+		assert.True(t, rows.closed)
+	})
+
+	t.Run("collect empty rows without error", func(t *testing.T) {
+		rows := mockRows{
+			rows: []mockRow{},
+		}
+		records, err := constructpgx.CollectRows[user](&rows, nil)
+		require.NoError(t, err)
+
+		assert.Len(t, records, 0)
+		assert.True(t, rows.closed)
+	})
+
+	t.Run("collect rows with initial error", func(t *testing.T) {
+		rows := mockRows{}
+		initialErr := errors.New("some initial error")
+		records, err := constructpgx.CollectRows[user](&rows, initialErr)
+		require.ErrorIs(t, err, initialErr)
+		assert.False(t, rows.closed)
+
+		assert.Empty(t, records)
+	})
+
+	t.Run("collect rows with scan error", func(t *testing.T) {
+		scanErr := errors.New("some scan error")
+		rows := mockRows{
+			rows: []mockRow{
+				{
+					scanUser: &user{ID: 1, Name: "test"},
+				},
+				{
+					scanErr: scanErr,
+				},
+			},
+		}
+		records, err := constructpgx.CollectRows[user](&rows, nil)
+		require.ErrorIs(t, err, scanErr)
+
+		assert.Empty(t, records)
+		assert.True(t, rows.closed)
+	})
+
+	t.Run("collect rows with iterate error", func(t *testing.T) {
+		iterateErr := errors.New("some iterate error")
+		rows := mockRows{
+			rows: []mockRow{
+				{
+					scanUser: &user{ID: 1, Name: "test"},
+				},
+			},
+			iterateErr: iterateErr,
+		}
+		records, err := constructpgx.CollectRows[user](&rows, nil)
+		require.ErrorIs(t, err, iterateErr)
+
+		assert.Empty(t, records)
+		assert.True(t, rows.closed)
+	})
+}
+
 func TestScanRow(t *testing.T) {
 	t.Run("scans row without error", func(t *testing.T) {
 		row := mockRow{
