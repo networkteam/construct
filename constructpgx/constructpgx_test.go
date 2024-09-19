@@ -41,6 +41,60 @@ func (r *mockRow) Scan(dest ...any) error {
 	return nil
 }
 
+type mockRows struct {
+	rows       []mockRow
+	iterateErr error
+
+	cursor int
+	closed bool
+}
+
+func (m *mockRows) Close() {
+	m.closed = true
+}
+
+func (m *mockRows) Err() error {
+	return m.iterateErr
+}
+
+func (m *mockRows) CommandTag() pgconn.CommandTag {
+	panic("not implemented")
+}
+
+func (m *mockRows) FieldDescriptions() []pgconn.FieldDescription {
+	panic("not implemented")
+}
+
+func (m *mockRows) Next() bool {
+	m.cursor++
+	return m.cursor <= len(m.rows)
+}
+
+func (m *mockRows) Scan(dest ...any) error {
+	if m.cursor == 0 {
+		return errors.New("mockRows.Scan: before first row, must call Next first")
+	}
+	if m.cursor > len(m.rows) {
+		return errors.New("mockRows.Scan: after last row")
+	}
+
+	return m.rows[m.cursor-1].Scan(dest...)
+}
+
+func (m *mockRows) Values() ([]any, error) {
+	panic("not implemented")
+}
+
+func (m *mockRows) RawValues() [][]byte {
+	panic("not implemented")
+}
+
+func (m *mockRows) Conn() *pgx.Conn {
+	panic("not implemented")
+}
+
+var _ pgx.Rows = &mockRows{}
+
 func TestScanRow(t *testing.T) {
 	t.Run("scans row without error", func(t *testing.T) {
 		row := mockRow{
