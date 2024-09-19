@@ -40,6 +40,153 @@ func (r *mockRow) Scan(dest ...any) error {
 	return nil
 }
 
+type mockRows struct {
+	rows       []mockRow
+	closeErr   error
+	iterateErr error
+
+	cursor int
+	closed bool
+}
+
+func (m *mockRows) Scan(dest ...any) error {
+	if m.cursor == 0 {
+		return errors.New("mockRows.Scan: before first row, must call Next first")
+	}
+	if m.cursor > len(m.rows) {
+		return errors.New("mockRows.Scan: after last row")
+	}
+
+	return m.rows[m.cursor-1].Scan(dest...)
+}
+
+func (m *mockRows) Next() bool {
+	m.cursor++
+	return m.cursor <= len(m.rows)
+}
+
+func (m *mockRows) Close() error {
+	m.closed = true
+	return m.closeErr
+}
+
+func (m *mockRows) Err() error {
+	return m.iterateErr
+}
+
+var _ constructsql.Rows = &mockRows{}
+
+func TestCollectRows(t *testing.T) {
+	t.Run("collect rows without error", func(t *testing.T) {
+		rows := mockRows{
+			rows: []mockRow{
+				{
+					scanJSON: []byte(`{"id": 1, "name": "test"}`),
+				},
+			},
+		}
+		records, err := constructsql.CollectRows[user](&rows, nil)
+		require.NoError(t, err)
+
+		assert.Equal(t, []user{{ID: 1, Name: "test"}}, records)
+		assert.True(t, rows.closed)
+	})
+
+	t.Run("collect empty rows without error", func(t *testing.T) {
+		rows := mockRows{
+			rows: []mockRow{},
+		}
+		records, err := constructsql.CollectRows[user](&rows, nil)
+		require.NoError(t, err)
+
+		assert.Len(t, records, 0)
+		assert.True(t, rows.closed)
+	})
+
+	t.Run("collect rows with initial error", func(t *testing.T) {
+		rows := mockRows{}
+		initialErr := errors.New("some initial error")
+		records, err := constructsql.CollectRows[user](&rows, initialErr)
+		require.ErrorIs(t, err, initialErr)
+		assert.False(t, rows.closed)
+
+		assert.Empty(t, records)
+	})
+
+	t.Run("collect rows with scan error", func(t *testing.T) {
+		scanErr := errors.New("some scan error")
+		rows := mockRows{
+			rows: []mockRow{
+				{
+					scanJSON: []byte(`{"id": 1, "name": "test"}`),
+				},
+				{
+					scanErr: scanErr,
+				},
+			},
+		}
+		records, err := constructsql.CollectRows[user](&rows, nil)
+		require.ErrorIs(t, err, scanErr)
+
+		assert.Empty(t, records)
+		assert.True(t, rows.closed)
+	})
+
+	t.Run("collect rows with iterate error", func(t *testing.T) {
+		iterateErr := errors.New("some iterate error")
+		rows := mockRows{
+			rows: []mockRow{
+				{
+					scanJSON: []byte(`{"id": 1, "name": "test"}`),
+				},
+			},
+			iterateErr: iterateErr,
+		}
+		records, err := constructsql.CollectRows[user](&rows, nil)
+		require.ErrorIs(t, err, iterateErr)
+
+		assert.Empty(t, records)
+		assert.True(t, rows.closed)
+	})
+
+	t.Run("collect rows with close error", func(t *testing.T) {
+		closeErr := errors.New("some error on close")
+		rows := mockRows{
+			rows: []mockRow{
+				{
+					scanJSON: []byte(`{"id": 1, "name": "test"}`),
+				},
+			},
+			closeErr: closeErr,
+		}
+		_, err := constructsql.CollectRows[user](&rows, nil)
+		require.ErrorIs(t, err, closeErr)
+
+		assert.True(t, rows.closed)
+	})
+
+	t.Run("collect rows with scan and close error", func(t *testing.T) {
+		scanErr := errors.New("some scan error")
+		closeErr := errors.New("some error on close")
+		rows := mockRows{
+			rows: []mockRow{
+				{
+					scanJSON: []byte(`{"id": 1, "name": "test"}`),
+				},
+				{
+					scanErr: scanErr,
+				},
+			},
+			closeErr: closeErr,
+		}
+		_, err := constructsql.CollectRows[user](&rows, nil)
+		require.ErrorIs(t, err, scanErr)
+		require.ErrorIs(t, err, closeErr)
+
+		assert.True(t, rows.closed)
+	})
+}
+
 func TestScanRow(t *testing.T) {
 	t.Run("scans row without error", func(t *testing.T) {
 		row := mockRow{

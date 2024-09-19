@@ -10,12 +10,14 @@ import (
 )
 
 // CollectRows collects all rows to the given target type from a ExecutiveQueryBuilder.Query result.
-func CollectRows[T any](rows Rows, err error) ([]T, error) {
-	if err != nil {
-		return nil, err
+func CollectRows[T any](rows Rows, queryErr error) (result []T, err error) {
+	if queryErr != nil {
+		return nil, queryErr
 	}
 
-	defer rows.Close()
+	defer func() {
+		err = errors.Join(err, rows.Close())
+	}()
 
 	slice := []T{}
 
