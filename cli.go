@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dave/jennifer/jen"
 	"github.com/urfave/cli/v2"
 
 	"github.com/networkteam/construct/v2/internal"
@@ -38,6 +39,11 @@ func NewCliApp() *cli.App {
 				Required: true,
 				EnvVars:  []string{"GOFILE"},
 			},
+			&cli.BoolFlag{
+				Name:  "split-files",
+				Value: true,
+				Usage: "Split generated code into multiple files",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			// fully qualified type (my/pkg.MyType) or package where the record mapping is stored in tags
@@ -65,10 +71,12 @@ func NewCliApp() *cli.App {
 				}
 
 				var buf bytes.Buffer
-				outputFilename, err := internal.Generate(m, goPackage, goFile, &buf)
+				f := internal.StartFile(goPackage)
+				err = internal.GenerateMapping(f, m, goPackage)
 				if err != nil {
 					return fmt.Errorf("generating code: %w", err)
 				}
+				outputFilename := internal.SplitOutputFilename(m, goFile)
 				if err := os.WriteFile(outputFilename, buf.Bytes(), 0644); err != nil {
 					return fmt.Errorf("writing output file: %w", err)
 				}
@@ -81,20 +89,56 @@ func NewCliApp() *cli.App {
 				return fmt.Errorf("discovering struct mappings: %w", err)
 			}
 
+			splitFiles := c.Bool("split-files")
+
+			var f *jen.File
+			if !splitFiles {
+				f = internal.StartFile(goPackage)
+			}
+
 			for _, m := range mappings {
-				var buf bytes.Buffer
-				outputFilename, err := internal.Generate(m, goPackage, goFile, &buf)
+				if splitFiles {
+					f = internal.StartFile(goPackage)
+				}
+
+				err = internal.GenerateMapping(f, m, goPackage)
 				if err != nil {
 					return fmt.Errorf("generating code: %w", err)
 				}
-				if err := os.WriteFile(outputFilename, buf.Bytes(), 0644); err != nil {
-					return fmt.Errorf("writing output file: %w", err)
+
+				if splitFiles {
+					outputFilename := internal.SplitOutputFilename(m, goFile)
+					err = writeFile(outputFilename, f)
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+			if !splitFiles {
+				outputFilename := internal.CombinedOutputFilename(goFile)
+				err = writeFile(outputFilename, f)
+				if err != nil {
+					return err
 				}
 			}
 
 			return nil
 		},
 	}
+}
+
+func writeFile(filename string, f *jen.File) error {
+	outputFile, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return fmt.Errorf("opening output file: %w", err)
+	}
+	defer outputFile.Close()
+	err = f.Render(outputFile)
+	if err != nil {
+		return fmt.Errorf("rendering output file: %w", err)
+	}
+	return nil
 }
 
 func getPackageAndTypeName(mappingType string) (string, string, error) {

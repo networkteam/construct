@@ -14,30 +14,45 @@ import (
 func TestGenerate(t *testing.T) {
 	m := myTypeStructMapping()
 
+	f := internal.StartFile("repository")
+	err := internal.GenerateMapping(f, m, "repository")
+	require.NoError(t, err)
+
 	var buf bytes.Buffer
-	outputFilename, err := internal.Generate(m, "repository", "mappings.go", &buf)
-	require.NoErrorf(t, err, "error generating code: %v")
+	err = f.Render(&buf)
+	require.NoError(t, err)
 
-	const expectedOutputFilename = "mappings_mytype_gen.go"
-	require.Equal(t, expectedOutputFilename, outputFilename, "expected output filename to be %s, but got %s", expectedOutputFilename, outputFilename)
-
-	fixtureOut, err := os.ReadFile("./fixtures/repository/" + expectedOutputFilename)
+	fixtureOut, err := os.ReadFile("./fixtures/repository/mappings_mytype_gen.go")
 	require.NoError(t, err, "error reading fixture file: %v")
 
 	assert.Equal(t, string(fixtureOut), buf.String())
 }
 
+func TestSplitOutputFilename(t *testing.T) {
+	m := myTypeStructMapping()
+
+	outputFilename := internal.SplitOutputFilename(m, "mappings.go")
+	assert.Equal(t, "mappings_mytype_gen.go", outputFilename)
+}
+
+func TestCombinedOutputFilename(t *testing.T) {
+	outputFilename := internal.CombinedOutputFilename("mappings.go")
+	assert.Equal(t, "mappings_gen.go", outputFilename)
+}
+
 func TestGenerateSamePackage(t *testing.T) {
 	m := myTypeStructMapping()
 
+	f := internal.StartFile("fixtures")
+
+	err := internal.GenerateMapping(f, m, "fixtures")
+	require.NoError(t, err)
+
 	var buf bytes.Buffer
-	outputFilename, err := internal.Generate(m, "fixtures", "fixture.go", &buf)
-	require.NoErrorf(t, err, "error generating code: %v")
+	err = f.Render(&buf)
+	require.NoError(t, err)
 
-	const expectedOutputFilename = "fixture_mytype_gen.go"
-	require.Equal(t, expectedOutputFilename, outputFilename, "expected output filename to be %s, but got %s", expectedOutputFilename, outputFilename)
-
-	fixtureOut, err := os.ReadFile("./fixtures/" + expectedOutputFilename)
+	fixtureOut, err := os.ReadFile("./fixtures/fixture_mytype_gen.go")
 	require.NoError(t, err, "error reading fixture file: %v")
 
 	assert.Equal(t, string(fixtureOut), buf.String())
