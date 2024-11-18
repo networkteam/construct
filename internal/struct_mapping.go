@@ -32,6 +32,8 @@ type FieldMapping struct {
 	WriteColDef *WriteColDef
 	// FieldType is the type in the Go struct
 	FieldType types.Type
+	// HasEqual is true, if the field type has an Equal method for comparison
+	HasEqual bool
 }
 
 // ReadColDef is the read column definition
@@ -48,11 +50,13 @@ type WriteColDef struct {
 	Col string
 	// ToJSON when writing a column value
 	ToJSON bool
+	// NoDiff skips the comparison for this field when building a change set from a diff
+	NoDiff bool
 }
 
 // BuildStructMapping builds a struct mapping for a given mapping type and target type
 func BuildStructMapping(mappingTypePackage string, mappingTypeName string, targetTypeName string) (*StructMapping, error) {
-	cfg := &packages.Config{Mode: packages.NeedTypes | packages.NeedSyntax | packages.NeedImports}
+	cfg := &packages.Config{Mode: packages.NeedTypes | packages.NeedTypesInfo | packages.NeedSyntax | packages.NeedImports}
 	pkgs, err := packages.Load(cfg, mappingTypePackage)
 	if err != nil {
 		return nil, fmt.Errorf("loading package for type info: %w", err)
@@ -81,7 +85,7 @@ func BuildStructMapping(mappingTypePackage string, mappingTypeName string, targe
 
 // DiscoverStructMappings discovers all struct mappings in a given package
 func DiscoverStructMappings(mappingTypePackage string) (mappings []*StructMapping, err error) {
-	cfg := &packages.Config{Mode: packages.NeedTypes | packages.NeedSyntax | packages.NeedImports}
+	cfg := &packages.Config{Mode: packages.NeedTypes | packages.NeedTypesInfo | packages.NeedSyntax | packages.NeedImports}
 	pkgs, err := packages.Load(cfg, mappingTypePackage)
 	if err != nil {
 		return nil, fmt.Errorf("loading package for type info: %w", err)
@@ -138,6 +142,7 @@ func buildStructMapping(targetTypeName, mappingTypePackage, mappingTypeName stri
 		fm := FieldMapping{
 			Name:      fieldName,
 			FieldType: field.Type(),
+			HasEqual:  hasEqualMethod(field.Type()),
 		}
 
 		for _, tag := range tags.Tags() {
@@ -151,6 +156,7 @@ func buildStructMapping(targetTypeName, mappingTypePackage, mappingTypeName stri
 				fm.WriteColDef = &WriteColDef{
 					Col:    tag.Name,
 					ToJSON: tag.HasOption("json"),
+					NoDiff: tag.HasOption("nodiff"),
 				}
 			}
 			if tag.Key == "table_name" {
@@ -173,6 +179,35 @@ func (m *StructMapping) hasColDef() bool {
 	for _, fm := range m.FieldMappings {
 		if fm.ReadColDef != nil || fm.WriteColDef != nil {
 			return true
+		}
+	}
+	return false
+}
+
+// hasEqualMethod checks if a type implements Equal method
+func hasEqualMethod(v types.Type) bool {
+	if ptr, ok := v.(*types.Pointer); ok {
+		v = ptr.Elem()
+	}
+
+	t, ok := v.(*types.Named)
+	if !ok {
+		return false
+	}
+
+	for i := 0; i < t.NumMethods(); i++ {
+		method := t.Method(i)
+		if method.Name() == "Equal" {
+			sig, ok := method.Type().(*types.Signature)
+			if !ok {
+				continue
+			}
+			// Check if method has one parameter and returns bool
+			if sig.Params().Len() == 1 && sig.Results().Len() == 1 {
+				if result, ok := sig.Results().At(0).Type().(*types.Basic); ok {
+					return result.Kind() == types.Bool
+				}
+			}
 		}
 	}
 	return false

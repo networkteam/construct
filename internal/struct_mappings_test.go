@@ -57,7 +57,8 @@ func myTypeStructMapping() *internal.StructMapping {
 				FieldType: types.NewSlice(types.Universe.Lookup("byte").Type()),
 			},
 			{
-				Name: "Baz",
+				Name:     "Baz",
+				HasEqual: true,
 				ReadColDef: &internal.ReadColDef{
 					Col:      "my_type.baz",
 					Sortable: false,
@@ -78,6 +79,7 @@ func myTypeStructMapping() *internal.StructMapping {
 					Col: "last_time",
 				},
 				FieldType: types.NewPointer(types.NewNamed(types.NewTypeName(token.NoPos, timePkg, "Time", nil), nil, nil)),
+				HasEqual:  true,
 			},
 			{
 				Name: "LastUpdate",
@@ -86,9 +88,11 @@ func myTypeStructMapping() *internal.StructMapping {
 					Sortable: true,
 				},
 				WriteColDef: &internal.WriteColDef{
-					Col: "updated_at",
+					Col:    "updated_at",
+					NoDiff: true,
 				},
 				FieldType: types.NewNamed(types.NewTypeName(token.NoPos, timePkg, "Time", nil), nil, nil),
+				HasEqual:  true,
 			},
 			{
 				Name: "Donuts",
@@ -163,6 +167,9 @@ func TestBuildStructMapping(t *testing.T) {
 			if actualFieldMapping.WriteColDef.ToJSON != expectedFieldMapping.WriteColDef.ToJSON {
 				t.Errorf("expected field mapping %d write col def json to be %v, but got %v", i, expectedFieldMapping.WriteColDef.ToJSON, actualFieldMapping.WriteColDef.ToJSON)
 			}
+			if actualFieldMapping.WriteColDef.NoDiff != expectedFieldMapping.WriteColDef.NoDiff {
+				t.Errorf("expected field mapping %d write col def no diff to be %v, but got %v", i, expectedFieldMapping.WriteColDef.NoDiff, actualFieldMapping.WriteColDef.NoDiff)
+			}
 		}
 
 		if actualFieldMapping.Name != expectedFieldMapping.Name {
@@ -171,6 +178,10 @@ func TestBuildStructMapping(t *testing.T) {
 
 		if actualFieldMapping.FieldType.String() != expectedFieldMapping.FieldType.String() {
 			t.Errorf("expected field mapping %d field type to be %s, but got %s", i, expectedFieldMapping.FieldType.String(), actualFieldMapping.FieldType.String())
+		}
+
+		if actualFieldMapping.HasEqual != expectedFieldMapping.HasEqual {
+			t.Errorf("expected field mapping %d has equal to be %v, but got %v", i, expectedFieldMapping.HasEqual, actualFieldMapping.HasEqual)
 		}
 	}
 }

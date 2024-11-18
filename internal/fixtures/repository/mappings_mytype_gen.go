@@ -8,6 +8,7 @@ import (
 	qrb "github.com/networkteam/qrb"
 	builder "github.com/networkteam/qrb/builder"
 	fn "github.com/networkteam/qrb/fn"
+	"slices"
 	"time"
 )
 
@@ -113,6 +114,28 @@ func MyTargetTypeToChangeSet(r fixtures.MyType) (c MyTargetTypeChangeSet) {
 	}
 	c.Donuts = r.Donuts
 	return
+}
+
+func DiffMyTargetType(source fixtures.MyType, target fixtures.MyType) (c MyTargetTypeChangeSet) {
+	if source.ID != target.ID {
+		c.ID = &target.ID
+	}
+	if source.Foo != target.Foo {
+		c.Foo = &target.Foo
+	}
+	if !slices.Equal(source.Bar, target.Bar) {
+		c.Bar = target.Bar
+	}
+	if !source.Baz.Equal(target.Baz) {
+		c.Baz = &target.Baz
+	}
+	if !((source.LastTime == nil && target.LastTime == nil) || (source.LastTime != nil && target.LastTime != nil && source.LastTime.Equal(*target.LastTime))) {
+		c.LastTime = &target.LastTime
+	}
+	if !slices.Equal(source.Donuts, target.Donuts) {
+		c.Donuts = target.Donuts
+	}
+	return c
 }
 
 var myTargetTypeDefaultJson = fn.JsonBuildObject().

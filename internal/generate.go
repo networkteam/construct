@@ -31,62 +31,148 @@ func GenerateMapping(f *File, m *StructMapping, goPackage string) (err error) {
 		return fmt.Errorf("generating ChangeSet struct: %w", err)
 	}
 
-	// Empty() method for ChangeSet
-	var emptyBlock []Code
-	for _, fm := range m.FieldMappings {
-		if fm.WriteColDef != nil {
-			code := If(Id("c").Dot(firstToUpper(fm.Name)).Op("!=").Nil()).Block(
-				Return(Lit(false)),
-			)
-			emptyBlock = append(emptyBlock, code)
-		}
+	generateChangeSetEmpty(f, m, changeSetName)
+	generateChangeSetToMap(f, m, changeSetName)
+	generateTargetTypeToChangeSet(f, m, goPackage, changeSetName)
+	err = generateDiffTargetType(f, m, goPackage, changeSetName)
+	if err != nil {
+		return fmt.Errorf("generating Diff function: %w", err)
 	}
-	emptyBlock = append(emptyBlock, Return(Lit(true)))
+	generateDefaultSelectJsonObject(f, m)
 
-	f.Func().Params(
-		Id("c").Id(changeSetName),
-	).Id("Empty").Params().Bool().Block(
-		emptyBlock...,
-	).Line()
+	return nil
+}
 
-	// toMap() method for ChangeSet
+func generateDiffTargetType(f *File, m *StructMapping, goPackage string, changeSetName string) error {
+	// Generate Diff function
+	var diffBlock []Code
 
-	var toMapBlock []Code
-	toMapBlock = append(toMapBlock, Id("m").Op(":=").Make(Map(String()).Interface()))
-
+	// For each field that's writable, generate comparison code
 	for _, fm := range m.FieldMappings {
-		if fm.WriteColDef != nil {
-			fieldName := fm.Name
+		if fm.WriteColDef == nil {
+			continue
+		}
+		if fm.WriteColDef.NoDiff {
+			continue
+		}
 
-			var prepareStmt *Statement
-			if fm.WriteColDef.ToJSON {
-				prepareStmt = Id("data").Op(",").Id("_").Op(":=").Qual("encoding/json", "Marshal").Call(Id("c").Dot(fieldName))
-			}
+		fieldName := firstToUpper(fm.Name)
+		sourceField := Id("source").Dot(fieldName)
+		targetField := Id("target").Dot(fieldName)
 
-			mapAssign := Id("m").Index(Lit(fm.WriteColDef.Col)).Op("=")
-			if fm.WriteColDef.ToJSON {
-				mapAssign.Id("data")
-			} else if _, ok := fm.FieldType.(*types.Slice); ok {
-				// Do not indirect slice values
-				mapAssign.Id("c").Dot(fieldName)
+		var comparison *Statement
+		switch v := fm.FieldType.(type) {
+		case *types.Slice:
+			// For slices, use slices.Equal
+			comparison = Op("!").Qual("slices", "Equal").Call(sourceField, targetField)
+
+		case *types.Map:
+			// For maps, use maps.Equal
+			comparison = Op("!").Qual("maps", "Equal").Call(sourceField, targetField)
+
+		case *types.Basic:
+			// For basic types, direct comparison
+			comparison = sourceField.Op("!=").Add(targetField)
+
+		case *types.Pointer:
+			// For pointers, check if both nil or both non-nil and values equal
+			comparison = Op("!").Parens(generatePointerComparison(fm, sourceField, targetField))
+
+		case *types.Named:
+			// Check if type implements Equal method
+			if fm.HasEqual {
+				// Use Equal method
+				comparison = Op("!").Add(sourceField).Dot("Equal").Call(targetField)
 			} else {
-				mapAssign.Op("*").Id("c").Dot(fieldName)
+				// Direct comparison
+				comparison = sourceField.Op("!=").Add(targetField)
 			}
-			code := If(Id("c").Dot(fieldName).Op("!=").Nil()).Block(prepareStmt, mapAssign)
-			toMapBlock = append(toMapBlock, code)
+
+		default:
+			return fmt.Errorf("unsupported field type for diff: %T", v)
+		}
+
+		// If different, set target value in changeset
+		var assignStmt *Statement
+		if _, ok := fm.FieldType.(*types.Slice); ok {
+			// For slices, assign directly
+			assignStmt = Id("c").Dot(fieldName).Op("=").Add(targetField)
+		} else {
+			// For other types, take address
+			assignStmt = Id("c").Dot(fieldName).Op("=").Op("&").Add(targetField)
+		}
+
+		diffBlock = append(diffBlock, If(comparison).Block(
+			assignStmt,
+		))
+	}
+
+	diffBlock = append(diffBlock, Return(Id("c")))
+
+	// Add the Diff function to the file
+	mtp := m.MappingTypePackage
+	pkgName := m.MappingTypePackage[strings.LastIndex(m.MappingTypePackage, "/")+1:]
+	if goPackage == pkgName {
+		mtp = ""
+	}
+
+	f.Func().Id("Diff"+m.TargetName).Params(
+		Id("source").Qual(mtp, m.MappingTypeName),
+		Id("target").Qual(mtp, m.MappingTypeName),
+	).Params(Id("c").Id(changeSetName)).Block(
+		diffBlock...,
+	).Line()
+
+	return nil
+}
+
+// generatePointerComparison generates direct pointer comparison code
+func generatePointerComparison(fm FieldMapping, sourceField, targetField *Statement) *Statement {
+	switch fm.FieldType.(*types.Pointer).Elem().(type) {
+	case *types.Named:
+		if fm.HasEqual {
+			// If type has Equal method, use it for comparison
+			return Parens(
+				sourceField.Clone().Op("==").Nil().Op("&&").Add(targetField.Clone().Op("==").Nil()),
+			).Op("||").Parens(
+				sourceField.Clone().Op("!=").Nil().Op("&&").Add(targetField.Clone().Op("!=").Nil().Op("&&")).
+					Add(sourceField.Clone().Dot("Equal").Call(Op("*").Add(targetField))),
+			)
 		}
 	}
 
-	toMapBlock = append(toMapBlock, Return(Id("m")))
+	// Default pointer comparison
+	return Parens(
+		sourceField.Clone().Op("==").Nil().Op("&&").Add(targetField.Clone().Op("==").Nil()),
+	).Op("||").Parens(
+		sourceField.Clone().Op("!=").Nil().Op("&&").Add(targetField.Clone().Op("!=").Nil()).Op("&&").
+			Op("*").Add(sourceField).Op("==").Op("*").Add(targetField),
+	)
+}
 
-	f.Func().Params(
-		Id("c").Id(changeSetName),
-	).Id("toMap").Params().Map(String()).Interface().Block(
-		toMapBlock...,
-	).Line()
+// typeReference generates the type reference code for a given type
+func typeReference(t types.Type) *Statement {
+	switch v := t.(type) {
+	case *types.Basic:
+		return Id(v.String())
+	case *types.Named:
+		pkg := v.Obj().Pkg()
+		if pkg == nil {
+			return Id(v.Obj().Name())
+		}
+		return Qual(pkg.Path(), v.Obj().Name())
+	case *types.Pointer:
+		return Op("*").Add(typeReference(v.Elem()))
+	case *types.Slice:
+		return Index().Add(typeReference(v.Elem()))
+	default:
+		// Add other cases as needed
+		return Id(t.String())
+	}
+}
 
-	// myRecordToChangeSet() function
-
+// generateTargetTypeToChangeSet generates a myRecordToChangeSet() function
+func generateTargetTypeToChangeSet(f *File, m *StructMapping, goPackage string, changeSetName string) {
 	var toChangeSetBlock []Code
 
 	for _, fm := range m.FieldMappings {
@@ -132,10 +218,63 @@ func GenerateMapping(f *File, m *StructMapping, goPackage string) (err error) {
 	).Params(Id("c").Id(changeSetName)).Block(
 		toChangeSetBlock...,
 	).Line()
+}
 
-	generateDefaultSelectJsonObject(f, m)
+// generateChangeSetToMap generates a toMap() method for ChangeSet
+func generateChangeSetToMap(f *File, m *StructMapping, changeSetName string) {
+	var toMapBlock []Code
+	toMapBlock = append(toMapBlock, Id("m").Op(":=").Make(Map(String()).Interface()))
 
-	return nil
+	for _, fm := range m.FieldMappings {
+		if fm.WriteColDef != nil {
+			fieldName := fm.Name
+
+			var prepareStmt *Statement
+			if fm.WriteColDef.ToJSON {
+				prepareStmt = Id("data").Op(",").Id("_").Op(":=").Qual("encoding/json", "Marshal").Call(Id("c").Dot(fieldName))
+			}
+
+			mapAssign := Id("m").Index(Lit(fm.WriteColDef.Col)).Op("=")
+			if fm.WriteColDef.ToJSON {
+				mapAssign.Id("data")
+			} else if _, ok := fm.FieldType.(*types.Slice); ok {
+				// Do not indirect slice values
+				mapAssign.Id("c").Dot(fieldName)
+			} else {
+				mapAssign.Op("*").Id("c").Dot(fieldName)
+			}
+			code := If(Id("c").Dot(fieldName).Op("!=").Nil()).Block(prepareStmt, mapAssign)
+			toMapBlock = append(toMapBlock, code)
+		}
+	}
+
+	toMapBlock = append(toMapBlock, Return(Id("m")))
+
+	f.Func().Params(
+		Id("c").Id(changeSetName),
+	).Id("toMap").Params().Map(String()).Interface().Block(
+		toMapBlock...,
+	).Line()
+}
+
+// generateChangeSetEmpty generates an Empty() method for ChangeSet
+func generateChangeSetEmpty(f *File, m *StructMapping, changeSetName string) {
+	var emptyBlock []Code
+	for _, fm := range m.FieldMappings {
+		if fm.WriteColDef != nil {
+			code := If(Id("c").Dot(firstToUpper(fm.Name)).Op("!=").Nil()).Block(
+				Return(Lit(false)),
+			)
+			emptyBlock = append(emptyBlock, code)
+		}
+	}
+	emptyBlock = append(emptyBlock, Return(Lit(true)))
+
+	f.Func().Params(
+		Id("c").Id(changeSetName),
+	).Id("Empty").Params().Bool().Block(
+		emptyBlock...,
+	).Line()
 }
 
 func getBaseFilename(goFile string) string {
