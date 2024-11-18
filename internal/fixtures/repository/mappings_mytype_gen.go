@@ -47,6 +47,31 @@ type MyTargetTypeChangeSet struct {
 	Donuts     []fixtures.Donut
 }
 
+func (c MyTargetTypeChangeSet) Empty() bool {
+	if c.ID != nil {
+		return false
+	}
+	if c.Foo != nil {
+		return false
+	}
+	if c.Bar != nil {
+		return false
+	}
+	if c.Baz != nil {
+		return false
+	}
+	if c.LastTime != nil {
+		return false
+	}
+	if c.LastUpdate != nil {
+		return false
+	}
+	if c.Donuts != nil {
+		return false
+	}
+	return true
+}
+
 func (c MyTargetTypeChangeSet) toMap() map[string]interface{} {
 	m := make(map[string]interface{})
 	if c.ID != nil {

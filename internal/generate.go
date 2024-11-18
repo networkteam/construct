@@ -31,6 +31,24 @@ func GenerateMapping(f *File, m *StructMapping, goPackage string) (err error) {
 		return fmt.Errorf("generating ChangeSet struct: %w", err)
 	}
 
+	// Empty() method for ChangeSet
+	var emptyBlock []Code
+	for _, fm := range m.FieldMappings {
+		if fm.WriteColDef != nil {
+			code := If(Id("c").Dot(firstToUpper(fm.Name)).Op("!=").Nil()).Block(
+				Return(Lit(false)),
+			)
+			emptyBlock = append(emptyBlock, code)
+		}
+	}
+	emptyBlock = append(emptyBlock, Return(Lit(true)))
+
+	f.Func().Params(
+		Id("c").Id(changeSetName),
+	).Id("Empty").Params().Bool().Block(
+		emptyBlock...,
+	).Line()
+
 	// toMap() method for ChangeSet
 
 	var toMapBlock []Code
